@@ -202,6 +202,82 @@
   .tx-amount.debit { color: var(--red); }
   .tx-amount.credit { color: var(--green); }
 
+  /* Filters */
+  .filter-section {
+    margin-bottom: 14px;
+  }
+  .filter-row {
+    display: flex; gap: 6px; overflow-x: auto;
+    padding: 2px 0 8px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-row { scrollbar-width: none; }
+
+  .filter-chip {
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 7px 14px;
+    color: var(--muted);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    scroll-snap-align: start;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .filter-chip:active { transform: scale(0.95); }
+  .filter-chip .dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  }
+  .filter-chip.active {
+    background: rgba(79,172,254,0.12);
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .filter-chip .count {
+    color: var(--muted); font-weight: 400; margin-left: 2px;
+  }
+  .filter-chip.active .count { color: var(--blue); opacity: 0.7; }
+
+  .filter-tabs {
+    display: flex; gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 10px;
+  }
+  .filter-tab {
+    flex: 1;
+    background: transparent; border: none;
+    padding: 8px 6px;
+    color: var(--muted);
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; border-radius: 5px;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s;
+  }
+  .filter-tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .filter-summary {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 11px;
+    margin-bottom: 12px;
+  }
+  .filter-summary .left { color: var(--muted); }
+  .filter-summary .right { color: var(--text); font-weight: 700; }
+
   /* Empty state */
   .empty {
     color: var(--muted); line-height: 1.8; font-size: 14px;
@@ -252,6 +328,14 @@
 </div>
 
 <script>
+// Filter state — persists across renders
+let activeFilters = {
+  type: 'all',     // all | spending | income | refunds
+  category: null,  // null = all
+  account: null    // null = all
+};
+let allTransactions = [];
+
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSj7h-tIurn29eq-KVDeZ9W0jRWbXXNkuyJSNfUSntpj4bM2W7FLtGi3vOM5SMVjHNuiuvHJ0h2WWF-/pub?gid=0&single=true&output=csv';
 
 const BUDGET_LIMIT = 950; // edit this to your monthly limit
@@ -442,26 +526,19 @@ function render(transactions) {
     html += `</div>`;
   }
 
+  // Store for filter re-renders
+  allTransactions = monthTx;
+
+  // Build category and account counts (for chip badges)
+  const catCounts = {};
+  const acctCounts = {};
+  monthTx.forEach(t => {
+    catCounts[t.category] = (catCounts[t.category] || 0) + 1;
+    if (t.account) acctCounts[t.account] = (acctCounts[t.account] || 0) + 1;
+  });
+
   if (monthTx.length > 0) {
-    html += `
-      <div class="card">
-        <div class="card-label">All Transactions (${monthTx.length})</div>
-        ${monthTx.sort((a, b) => new Date(b.date) - new Date(a.date)).map(tx => `
-          <div class="tx-row">
-            <div class="tx-left">
-              <span class="cat-dot" style="background:${CAT_COLOR[tx.category] || '#6b7280'}"></span>
-              <div class="tx-info">
-                <div class="tx-name">${tx.merchant || 'Unknown'}</div>
-                <div class="tx-meta">${tx.category} · ${fmtDate(tx.date)}</div>
-              </div>
-            </div>
-            <span class="tx-amount ${tx.isDebit ? 'debit' : 'credit'}">
-              ${tx.isDebit ? '−' : '+'}${fmtMoney(tx.amount)}
-            </span>
-          </div>
-        `).join('')}
-      </div>
-    `;
+    html += `<div class="card" id="txCard">${renderTransactionList()}</div>`;
   } else {
     html += `<div class="empty"><div class="big">📭</div>No transactions this month yet</div>`;
   }
@@ -469,6 +546,116 @@ function render(transactions) {
   html += `<div class="footer-info">UPDATED ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>`;
 
   document.getElementById('content').innerHTML = html;
+}
+
+function renderTransactionList() {
+  // Apply filters
+  let filtered = allTransactions.slice();
+
+  if (activeFilters.type === 'spending') {
+    const NON_SPEND = ['Transfer', 'Investment', 'Gifts', 'Charity', 'Refund'];
+    filtered = filtered.filter(t => t.isDebit && !NON_SPEND.includes(t.category));
+  } else if (activeFilters.type === 'income') {
+    filtered = filtered.filter(t => !t.isDebit && t.category !== 'Refund');
+  } else if (activeFilters.type === 'refunds') {
+    filtered = filtered.filter(t => t.category === 'Refund');
+  }
+
+  if (activeFilters.category) {
+    filtered = filtered.filter(t => t.category === activeFilters.category);
+  }
+  if (activeFilters.account) {
+    filtered = filtered.filter(t => t.account === activeFilters.account);
+  }
+
+  filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Build category/account counts from full list for chips
+  const catCounts = {};
+  const acctCounts = {};
+  allTransactions.forEach(t => {
+    catCounts[t.category] = (catCounts[t.category] || 0) + 1;
+    if (t.account) acctCounts[t.account] = (acctCounts[t.account] || 0) + 1;
+  });
+
+  // Sort categories by count descending
+  const cats = Object.entries(catCounts).sort((a,b) => b[1]-a[1]);
+  const accts = Object.entries(acctCounts).sort((a,b) => b[1]-a[1]);
+
+  // Filtered totals
+  const filteredTotal = filtered.reduce((s, t) => s + (t.isDebit ? t.amount : -t.amount), 0);
+  const totalLabel = filteredTotal >= 0 ? 'Net spent' : 'Net received';
+  const totalDisplay = fmtMoney(Math.abs(filteredTotal));
+
+  let html = `
+    <div class="card-label">Transactions</div>
+
+    <div class="filter-section">
+      <div class="filter-tabs">
+        <button class="filter-tab ${activeFilters.type==='all'?'active':''}" onclick="setFilter('type','all')">All</button>
+        <button class="filter-tab ${activeFilters.type==='spending'?'active':''}" onclick="setFilter('type','spending')">Spending</button>
+        <button class="filter-tab ${activeFilters.type==='income'?'active':''}" onclick="setFilter('type','income')">Income</button>
+        <button class="filter-tab ${activeFilters.type==='refunds'?'active':''}" onclick="setFilter('type','refunds')">Refunds</button>
+      </div>
+
+      <div class="filter-row">
+        <button class="filter-chip ${!activeFilters.category?'active':''}" onclick="setFilter('category',null)">
+          All categories <span class="count">${allTransactions.length}</span>
+        </button>
+        ${cats.map(([cat, count]) => `
+          <button class="filter-chip ${activeFilters.category===cat?'active':''}" onclick="setFilter('category','${cat.replace(/'/g, "\\'")}')">
+            <span class="dot" style="background:${CAT_COLOR[cat]||'#6b7280'}"></span>
+            ${cat} <span class="count">${count}</span>
+          </button>
+        `).join('')}
+      </div>
+
+      ${accts.length > 1 ? `
+        <div class="filter-row">
+          <button class="filter-chip ${!activeFilters.account?'active':''}" onclick="setFilter('account',null)">
+            All accounts
+          </button>
+          ${accts.map(([acct, count]) => `
+            <button class="filter-chip ${activeFilters.account===acct?'active':''}" onclick="setFilter('account','${acct.replace(/'/g, "\\'")}')">
+              ${acct} <span class="count">${count}</span>
+            </button>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="filter-summary">
+      <span class="left">${filtered.length} of ${allTransactions.length} shown</span>
+      <span class="right">${totalLabel}: ${totalDisplay}</span>
+    </div>
+  `;
+
+  if (filtered.length === 0) {
+    html += `<div class="empty" style="padding:24px 12px;font-size:12px"><div class="big" style="font-size:24px">∅</div>No matches for these filters</div>`;
+  } else {
+    html += filtered.map(tx => `
+      <div class="tx-row">
+        <div class="tx-left">
+          <span class="cat-dot" style="background:${CAT_COLOR[tx.category] || '#6b7280'}"></span>
+          <div class="tx-info">
+            <div class="tx-name">${tx.merchant || 'Unknown'}</div>
+            <div class="tx-meta">${tx.category} · ${fmtDate(tx.date)}${tx.account ? ' · ' + tx.account : ''}</div>
+          </div>
+        </div>
+        <span class="tx-amount ${tx.isDebit ? 'debit' : 'credit'}">
+          ${tx.isDebit ? '−' : '+'}${fmtMoney(tx.amount)}
+        </span>
+      </div>
+    `).join('');
+  }
+
+  return html;
+}
+
+function setFilter(key, value) {
+  activeFilters[key] = value;
+  const card = document.getElementById('txCard');
+  if (card) card.innerHTML = renderTransactionList();
 }
 
 function renderEmpty() {
