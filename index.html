@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ledger">
+<meta name="theme-color" content="#080810">
+<title>Ledger</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23080810'/><text x='50%25' y='52%25' font-family='monospace' font-size='44' font-weight='700' fill='%233ddc84' text-anchor='middle' dominant-baseline='middle'>L</text><circle cx='128' cy='62' r='6' fill='%233ddc84'/></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #080810; --surface: #0f0f1a; --border: #1a1a28;
+    --text: #d8d6f0; --muted: #4a4a6a;
+    --green: #3ddc84; --red: #ff6b6b; --yellow: #ffd166; --blue: #4facfe;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Top bar */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(8,8,16,0.92);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    padding-top: max(14px, env(safe-area-inset-top));
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    font-family: var(--mono); font-size: 15px; font-weight: 700;
+    color: #fff; letter-spacing: 0.1em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); flex-shrink: 0;
+    box-shadow: 0 0 8px var(--green);
+  }
+  .status-dot.loading { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); animation: pulse 1.4s infinite; }
+  .status-dot.error { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+
+  .refresh-btn {
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px;
+    color: var(--muted); font-family: var(--mono); font-size: 11px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .refresh-btn:active { opacity: 0.6; }
+
+  .container {
+    max-width: 600px; margin: 0 auto;
+    padding: 24px 20px;
+    padding-bottom: max(48px, env(safe-area-inset-bottom));
+  }
+
+  /* Headings */
+  .label {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.2em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  h1 {
+    font-family: var(--mono); font-size: 26px; font-weight: 700;
+    color: #fff; letter-spacing: -0.01em; margin-bottom: 24px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px; margin-bottom: 14px;
+  }
+  .card-label {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+
+  /* Summary grid */
+  .summary-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin-bottom: 14px;
+  }
+  .summary-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 12px;
+  }
+  .summary-label {
+    font-family: var(--mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.14em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .summary-value {
+    font-family: var(--mono); font-size: 18px; font-weight: 700;
+  }
+  .summary-value.red { color: var(--red); }
+  .summary-value.green { color: var(--green); }
+  .summary-value.yellow { color: var(--yellow); }
+  .summary-value.blue { color: var(--blue); }
+
+  /* Budget bar */
+  .budget-row {
+    display: flex; justify-content: space-between;
+    font-size: 11px; font-family: var(--mono); margin-bottom: 8px;
+  }
+  .budget-row span:first-child { color: var(--muted); }
+  .budget-row span:last-child { color: var(--text); }
+  .progress-bar-wrap {
+    background: var(--bg); border-radius: 3px;
+    height: 6px; overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%; border-radius: 3px;
+    width: 0%; transition: width 0.8s ease;
+  }
+
+  /* Category bars */
+  .cat-bar-row { margin-bottom: 14px; }
+  .cat-bar-row:last-child { margin-bottom: 0; }
+  .cat-bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px; margin-bottom: 5px;
+  }
+  .cat-bar-label .left { display: flex; align-items: center; gap: 8px; color: #b0aec8; }
+  .cat-bar-label .right { font-family: var(--mono); font-weight: 700; color: #fff; }
+  .cat-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .cat-bar-track {
+    background: var(--bg); border-radius: 3px; height: 3px;
+  }
+  .cat-bar-fill {
+    height: 100%; border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  /* Transaction rows */
+  .tx-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .tx-row:last-child { border-bottom: none; }
+  .tx-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .tx-info { min-width: 0; flex: 1; }
+  .tx-name {
+    font-size: 14px; color: #d0cee8; font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tx-meta {
+    font-size: 11px; color: var(--muted);
+    margin-top: 2px; font-family: var(--mono);
+  }
+  .tx-amount {
+    font-family: var(--mono); font-size: 14px; font-weight: 700;
+    white-space: nowrap; padding-left: 10px;
+  }
+  .tx-amount.debit { color: var(--red); }
+  .tx-amount.credit { color: var(--green); }
+
+  /* Empty state */
+  .empty {
+    color: var(--muted); line-height: 1.8; font-size: 14px;
+    text-align: center; padding: 40px 20px;
+  }
+  .empty .big { font-size: 32px; margin-bottom: 16px; }
+
+  /* Loader */
+  .loading-msg {
+    color: var(--muted); font-family: var(--mono); font-size: 12px;
+    text-align: center; padding: 80px 20px;
+  }
+
+  /* Error */
+  .error-card {
+    background: rgba(255,107,107,0.06);
+    border: 1px solid rgba(255,107,107,0.3);
+    border-radius: 10px; padding: 16px;
+    margin-bottom: 14px;
+  }
+  .error-card .label { color: var(--red); margin-bottom: 6px; }
+  .error-card .msg { font-size: 13px; line-height: 1.6; color: #f4c0c0; }
+
+  /* Last updated */
+  .footer-info {
+    margin-top: 24px; text-align: center;
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  ::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="status-dot" id="statusDot"></div>
+    LEDGER
+  </div>
+  <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ REFRESH</button>
+</div>
+
+<div class="container">
+  <div id="content">
+    <div class="loading-msg" id="loader">Loading transactions...</div>
+  </div>
+</div>
+
+<script>
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSj7h-tIurn29eq-KVDeZ9W0jRWbXXNkuyJSNfUSntpj4bM2W7FLtGi3vOM5SMVjHNuiuvHJ0h2WWF-/pub?gid=0&single=true&output=csv';
+
+const BUDGET_LIMIT = 3500; // edit this to your monthly limit
+
+const CAT_COLOR = {
+  Groceries: '#3ddc84', Dining: '#fb923c', Gas: '#ffd166', Transport: '#4facfe',
+  Shopping: '#c084fc', Subscriptions: '#f472b6', Utilities: '#94a3b8',
+  Health: '#34d399', Entertainment: '#a78bfa', Travel: '#38bdf8',
+  Income: '#86efac', Investment: '#fbbf24', Transfer: '#cbd5e1',
+  'ATM/Cash': '#fcd34d', Other: '#6b7280'
+};
+
+// ─── CSV Parser ─────────────────────────────────────────────────────────────
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cell = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], next = text[i + 1];
+    if (inQuotes) {
+      if (c === '"' && next === '"') { cell += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { cell += c; }
+    } else {
+      if (c === '"') { inQuotes = true; }
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (c === '\r') { /* skip */ }
+      else { cell += c; }
+    }
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+// ─── Data fetch ─────────────────────────────────────────────────────────────
+
+async function loadData() {
+  const dot = document.getElementById('statusDot');
+  const btn = document.getElementById('refreshBtn');
+  dot.className = 'status-dot loading';
+  btn.disabled = true;
+  btn.textContent = '↻ ...';
+
+  try {
+    // Cache-bust to always get fresh data
+    const url = SHEET_URL + '&_=' + Date.now();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const csv = await res.text();
+    const rows = parseCSV(csv);
+
+    if (rows.length < 2) {
+      renderEmpty();
+      dot.className = 'status-dot';
+      btn.disabled = false;
+      btn.textContent = '↻ REFRESH';
+      return;
+    }
+
+    const headers = rows[0].map(h => h.trim());
+    const transactions = rows.slice(1)
+      .filter(r => r.length >= headers.length && r[0])
+      .map(r => {
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = r[i]; });
+        return {
+          date: obj.Date,
+          merchant: obj.Merchant,
+          amount: parseFloat(obj.Amount) || 0,
+          type: obj.Type,
+          category: obj.Category || 'Other',
+          account: obj.Account,
+          isDebit: !['credit', 'income', 'deposit'].includes((obj.Type || '').toLowerCase())
+        };
+      })
+      .filter(t => t.amount > 0);
+
+    render(transactions);
+    dot.className = 'status-dot';
+  } catch (err) {
+    renderError(err.message);
+    dot.className = 'status-dot error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↻ REFRESH';
+  }
+}
+
+// ─── Rendering ──────────────────────────────────────────────────────────────
+
+function fmtMoney(n) {
+  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  try {
+    const parsed = new Date(d);
+    if (isNaN(parsed)) return d;
+    return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch { return d; }
+}
+
+function render(transactions) {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const monthTx = transactions.filter(t => {
+    const d = new Date(t.date);
+    return !isNaN(d) && d >= monthStart;
+  });
+
+  const spent = monthTx.filter(t => t.isDebit && t.category !== 'Transfer' && t.category !== 'Investment')
+    .reduce((s, t) => s + t.amount, 0);
+  const income = monthTx.filter(t => !t.isDebit && (t.category === 'Income' || t.category === 'Transfer'))
+    .reduce((s, t) => s + t.amount, 0);
+  const pct = Math.min(Math.round((spent / BUDGET_LIMIT) * 100), 100);
+
+  const byCategory = {};
+  monthTx.filter(t => t.isDebit && t.category !== 'Transfer').forEach(t => {
+    byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
+  });
+  const totalForBars = Object.values(byCategory).reduce((s, v) => s + v, 0) || 1;
+
+  const monthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const pctColor = pct > 80 ? 'red' : pct > 50 ? 'yellow' : 'green';
+  const barColor = pct > 80 ? 'var(--red)' : pct > 50 ? 'var(--yellow)' : 'var(--green)';
+
+  let html = `
+    <div class="label">✓ LIVE FROM SHEET</div>
+    <h1>${monthName}</h1>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Spent</div>
+        <div class="summary-value red">${fmtMoney(spent)}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Income</div>
+        <div class="summary-value green">${fmtMoney(income)}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Used</div>
+        <div class="summary-value ${pctColor}">${pct}%</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="budget-row">
+        <span>Monthly limit</span>
+        <span>${fmtMoney(spent)} / ${fmtMoney(BUDGET_LIMIT)}</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" style="width:${pct}%; background:${barColor}"></div>
+      </div>
+    </div>
+  `;
+
+  if (Object.keys(byCategory).length > 0) {
+    html += `<div class="card"><div class="card-label">By Category</div>`;
+    Object.entries(byCategory).sort((a, b) => b[1] - a[1]).forEach(([cat, amt]) => {
+      const color = CAT_COLOR[cat] || '#6b7280';
+      html += `
+        <div class="cat-bar-row">
+          <div class="cat-bar-label">
+            <span class="left"><span class="cat-dot" style="background:${color}"></span>${cat}</span>
+            <span class="right">${fmtMoney(amt)}</span>
+          </div>
+          <div class="cat-bar-track">
+            <div class="cat-bar-fill" style="width:${(amt/totalForBars*100).toFixed(1)}%; background:${color}"></div>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (monthTx.length > 0) {
+    html += `
+      <div class="card">
+        <div class="card-label">All Transactions (${monthTx.length})</div>
+        ${monthTx.sort((a, b) => new Date(b.date) - new Date(a.date)).map(tx => `
+          <div class="tx-row">
+            <div class="tx-left">
+              <span class="cat-dot" style="background:${CAT_COLOR[tx.category] || '#6b7280'}"></span>
+              <div class="tx-info">
+                <div class="tx-name">${tx.merchant || 'Unknown'}</div>
+                <div class="tx-meta">${tx.category} · ${fmtDate(tx.date)}</div>
+              </div>
+            </div>
+            <span class="tx-amount ${tx.isDebit ? 'debit' : 'credit'}">
+              ${tx.isDebit ? '−' : '+'}${fmtMoney(tx.amount)}
+            </span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else {
+    html += `<div class="empty"><div class="big">📭</div>No transactions this month yet</div>`;
+  }
+
+  html += `<div class="footer-info">UPDATED ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>`;
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderEmpty() {
+  document.getElementById('content').innerHTML = `
+    <h1>Ledger</h1>
+    <div class="empty">
+      <div class="big">📭</div>
+      No transactions yet.<br>
+      Run scanInbox in your Apps Script to populate the Sheet.
+    </div>
+  `;
+}
+
+function renderError(msg) {
+  document.getElementById('content').innerHTML = `
+    <h1>Ledger</h1>
+    <div class="error-card">
+      <div class="label">⚠ CONNECTION ERROR</div>
+      <div class="msg">${msg}<br><br>Check that your Sheet is published to web as CSV.</div>
+    </div>
+  `;
+}
+
+// Pull-to-refresh on iOS
+let touchStart = 0;
+document.addEventListener('touchstart', e => { touchStart = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const diff = e.changedTouches[0].clientY - touchStart;
+  if (diff > 100 && window.scrollY === 0) loadData();
+}, { passive: true });
+
+loadData();
+</script>
+</body>
+</html>
