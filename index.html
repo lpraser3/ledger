@@ -202,6 +202,36 @@
   .tx-amount.debit { color: var(--red); }
   .tx-amount.credit { color: var(--green); }
 
+  /* Month picker */
+  .month-picker {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 18px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 6px;
+  }
+  .month-arrow {
+    background: transparent; border: none;
+    color: var(--muted); font-size: 18px;
+    width: 36px; height: 36px;
+    border-radius: 7px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .month-arrow:not(:disabled):active { background: var(--border); color: var(--text); }
+  .month-arrow:disabled { opacity: 0.25; cursor: default; }
+  .month-display {
+    flex: 1; text-align: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 700;
+    color: var(--text); letter-spacing: 0.04em;
+    padding: 8px 0;
+  }
+  .month-display .label {
+    display: block; font-size: 9px; font-weight: 700;
+    color: var(--muted); letter-spacing: 0.18em;
+    margin-bottom: 2px;
+  }
+
   /* Filters */
   .filter-section {
     margin-bottom: 14px;
@@ -334,19 +364,23 @@ let activeFilters = {
   category: null,  // null = all
   account: null    // null = all
 };
-let allTransactions = [];
+let allTransactions = [];        // current month's transactions (filtered)
+let everyTransaction = [];       // ALL transactions across all months
+let activeMonth = null;          // 'YYYY-MM' or null for current month
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSj7h-tIurn29eq-KVDeZ9W0jRWbXXNkuyJSNfUSntpj4bM2W7FLtGi3vOM5SMVjHNuiuvHJ0h2WWF-/pub?gid=0&single=true&output=csv';
 
 const BUDGET_LIMIT = 950; // edit this to your monthly limit
-const NON_SPENDING_CATEGORIES = ['Transfer', 'Investment', 'Gifts', 'Charity', 'Refund'];
+const NON_SPENDING_CATEGORIES = ['Transfer', 'Investment', 'Gifts', 'Charity', 'Refund', 'Reimbursement', 'Income'];
 
 const CAT_COLOR = {
   Groceries: '#3ddc84', Dining: '#fb923c', Gas: '#ffd166', Transport: '#4facfe',
   Shopping: '#c084fc', Subscriptions: '#f472b6', Utilities: '#94a3b8',
   Health: '#34d399', Entertainment: '#a78bfa', Travel: '#38bdf8',
   Income: '#86efac', Investment: '#fbbf24', Transfer: '#cbd5e1',
-  'ATM/Cash': '#fcd34d', Other: '#6b7280'
+  'ATM/Cash': '#fcd34d', Gifts: '#f9a8d4', Charity: '#fda4af',
+  'Misc Expenses': '#a1a1aa', General: '#67e8f9', Reimbursement: '#86efac',
+  Refund: '#86efac', Other: '#6b7280'
 };
 
 // ─── CSV Parser ─────────────────────────────────────────────────────────────
@@ -442,17 +476,43 @@ function fmtDate(d) {
 }
 
 function render(transactions) {
+  // Store all transactions globally for month switching
+  everyTransaction = transactions;
+
+  // Build sorted list of available months (YYYY-MM)
+  const monthSet = new Set();
+  transactions.forEach(t => {
+    const d = new Date(t.date);
+    if (!isNaN(d)) {
+      monthSet.add(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+    }
+  });
+  const months = Array.from(monthSet).sort().reverse();
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+  // Default to current month if it has data, else most recent
+  if (!activeMonth || !months.includes(activeMonth)) {
+    activeMonth = months.includes(currentMonthKey) ? currentMonthKey : (months[0] || currentMonthKey);
+  }
+
+  const [yr, mo] = activeMonth.split('-').map(Number);
+  const monthStart = new Date(yr, mo - 1, 1);
+  const monthEnd = new Date(yr, mo, 1);
 
   const monthTx = transactions.filter(t => {
     const d = new Date(t.date);
-    return !isNaN(d) && d >= monthStart;
+    return !isNaN(d) && d >= monthStart && d < monthEnd;
   });
+
+  // Available months for prev/next navigation
+  const idx = months.indexOf(activeMonth);
+  const prevMonth = idx < months.length - 1 ? months[idx + 1] : null;
+  const nextMonth = idx > 0 ? months[idx - 1] : null;
 
   const spent = monthTx.filter(t => t.isDebit && !NON_SPENDING_CATEGORIES.includes(t.category))
     .reduce((s, t) => s + t.amount, 0);
-  const refunds = monthTx.filter(t => !t.isDebit && t.category === 'Refund')
+  const refunds = monthTx.filter(t => !t.isDebit && (t.category === 'Refund' || t.category === 'Reimbursement'))
     .reduce((s, t) => s + t.amount, 0);
   const netSpent = spent - refunds;
   const income = monthTx.filter(t => !t.isDebit && (t.category === 'Income' || t.category === 'Transfer'))
@@ -466,14 +526,23 @@ function render(transactions) {
   });
   const totalForBars = Object.values(byCategory).reduce((s, v) => s + v, 0) || 1;
 
-  const monthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const displayDate = new Date(yr, mo - 1, 1);
+  const monthName = displayDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const isCurrent = activeMonth === currentMonthKey;
 
   const pctColor = pct > 80 ? 'red' : pct > 50 ? 'yellow' : 'green';
   const barColor = pct > 80 ? 'var(--red)' : pct > 50 ? 'var(--yellow)' : 'var(--green)';
 
   let html = `
     <div class="label">✓ LIVE FROM SHEET</div>
-    <h1>${monthName}</h1>
+    <div class="month-picker">
+      <button class="month-arrow" onclick="changeMonth('${prevMonth || ''}')" ${prevMonth ? '' : 'disabled'}>‹</button>
+      <div class="month-display">
+        <span class="label">${isCurrent ? 'CURRENT MONTH' : 'VIEWING'}</span>
+        ${monthName}
+      </div>
+      <button class="month-arrow" onclick="changeMonth('${nextMonth || ''}')" ${nextMonth ? '' : 'disabled'}>›</button>
+    </div>
 
     <div class="circle-wrap">
       <svg class="progress-circle" viewBox="0 0 200 200">
@@ -553,12 +622,11 @@ function renderTransactionList() {
   let filtered = allTransactions.slice();
 
   if (activeFilters.type === 'spending') {
-    const NON_SPEND = ['Transfer', 'Investment', 'Gifts', 'Charity', 'Refund'];
-    filtered = filtered.filter(t => t.isDebit && !NON_SPEND.includes(t.category));
+    filtered = filtered.filter(t => t.isDebit && !NON_SPENDING_CATEGORIES.includes(t.category));
   } else if (activeFilters.type === 'income') {
-    filtered = filtered.filter(t => !t.isDebit && t.category !== 'Refund');
+    filtered = filtered.filter(t => !t.isDebit && t.category === 'Income');
   } else if (activeFilters.type === 'refunds') {
-    filtered = filtered.filter(t => t.category === 'Refund');
+    filtered = filtered.filter(t => t.category === 'Refund' || t.category === 'Reimbursement');
   }
 
   if (activeFilters.category) {
@@ -656,6 +724,16 @@ function setFilter(key, value) {
   activeFilters[key] = value;
   const card = document.getElementById('txCard');
   if (card) card.innerHTML = renderTransactionList();
+}
+
+function changeMonth(monthKey) {
+  if (!monthKey) return;
+  activeMonth = monthKey;
+  // Reset filters when switching months
+  activeFilters = { type: 'all', category: null, account: null };
+  render(everyTransaction);
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderEmpty() {
