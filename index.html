@@ -364,6 +364,184 @@
     letter-spacing: 0.1em;
   }
 
+  /* View tabs (top-level: Spending / Investments / Net Worth) */
+  .view-tabs {
+    display: flex; gap: 4px;
+    margin-bottom: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .view-tab {
+    flex: 1; background: transparent; border: none;
+    padding: 10px 6px;
+    color: var(--muted);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; border-radius: 7px;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s;
+  }
+  .view-tab.active {
+    background: var(--blue); color: #000;
+  }
+
+  /* Floating action button */
+  .fab {
+    position: fixed; right: 24px;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--blue);
+    border: none; color: #000;
+    font-size: 24px; font-weight: 700;
+    cursor: pointer; z-index: 50;
+    box-shadow: 0 4px 16px rgba(79,172,254,0.4);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.12s;
+  }
+  .fab:active { transform: scale(0.92); }
+
+  /* Modal / bottom sheet */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fadeIn 0.15s;
+  }
+  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+  .modal {
+    background: var(--surface);
+    border-top-left-radius: 18px; border-top-right-radius: 18px;
+    width: 100%; max-width: 600px;
+    max-height: 85vh; overflow-y: auto;
+    padding: 24px 20px;
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+    animation: slideUp 0.2s ease;
+    border-top: 1px solid var(--border);
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .modal-title {
+    font-family: var(--mono); font-size: 16px; font-weight: 700; color: #fff;
+    letter-spacing: 0.04em;
+  }
+  .modal-close {
+    background: transparent; border: none;
+    color: var(--muted); font-size: 22px;
+    cursor: pointer; padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    width: 28px; height: 28px;
+  }
+
+  .modal-section { margin-bottom: 16px; }
+  .modal-label {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .modal-input, .modal-select {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 11px 12px; color: var(--text);
+    font-size: 14px; font-family: var(--mono);
+    -webkit-appearance: none;
+  }
+  .modal-input:focus, .modal-select:focus { outline: none; border-color: var(--blue); }
+
+  .modal-cat-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  }
+  .modal-cat-btn {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 7px; padding: 10px 8px;
+    color: var(--muted); font-size: 11px; font-family: var(--mono);
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .modal-cat-btn.selected {
+    border-color: var(--blue); color: var(--blue);
+    background: rgba(79,172,254,0.08);
+  }
+
+  .modal-actions {
+    display: flex; gap: 10px; margin-top: 24px;
+  }
+  .modal-btn {
+    flex: 1; padding: 13px;
+    border-radius: 8px; border: none;
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.1em; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .modal-btn.primary { background: var(--blue); color: #000; }
+  .modal-btn.danger { background: rgba(255,107,107,0.15); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+  .modal-btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+  /* Tappable transaction row */
+  .tx-row { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
+  .tx-row:active { background: rgba(255,255,255,0.02); }
+
+  .tx-subcat {
+    color: #6a6a8a;
+    background: rgba(255,255,255,0.03);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    font-size: 10px;
+  }
+
+  /* Investments view */
+  .portfolio-card {
+    background: linear-gradient(135deg, #0f1929 0%, #0d1521 100%);
+    border: 1px solid rgba(79,172,254,0.2);
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 14px;
+  }
+  .portfolio-amount {
+    font-family: var(--mono); font-size: 32px; font-weight: 700;
+    color: #fff; margin-bottom: 4px;
+  }
+  .portfolio-change {
+    font-family: var(--mono); font-size: 13px; font-weight: 700;
+  }
+  .portfolio-change.up { color: var(--green); }
+  .portfolio-change.down { color: var(--red); }
+
+  /* Net worth view */
+  .balance-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .balance-row:last-child { border-bottom: none; }
+  .balance-row:active { background: rgba(255,255,255,0.02); }
+  .balance-name { color: var(--text); font-weight: 500; }
+  .balance-date { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .balance-amount { font-family: var(--mono); font-size: 16px; font-weight: 700; color: #fff; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 100px;
+    transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 18px;
+    color: var(--text); font-family: var(--mono); font-size: 12px;
+    z-index: 300; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .toast.show { opacity: 1; }
+  .toast.success { border-color: rgba(61,220,132,0.3); color: var(--green); }
+  .toast.error { border-color: rgba(255,107,107,0.3); color: var(--red); }
+
   ::-webkit-scrollbar { width: 0; }
 </style>
 </head>
@@ -378,12 +556,25 @@
 </div>
 
 <div class="container">
+  <div class="view-tabs">
+    <button class="view-tab active" data-view="spending" onclick="setView('spending')">Spending</button>
+    <button class="view-tab" data-view="investments" onclick="setView('investments')">Investments</button>
+    <button class="view-tab" data-view="networth" onclick="setView('networth')">Net Worth</button>
+  </div>
   <div id="content">
     <div class="loading-msg" id="loader">Loading transactions...</div>
   </div>
 </div>
 
+<button class="fab" onclick="openAddModal()" id="addFab">+</button>
+<div id="modalRoot"></div>
+<div id="toast" class="toast"></div>
+
 <script>
+// === CONFIG ===
+// Paste your Apps Script Web App URL here after deploying:
+const WORKER_URL = 'https://script.google.com/macros/s/AKfycbyQbydMp2LMtFPMT6pL3ziZs70Q4M3eAeiQsLzeXsVi8gWfHgsEZdm9WqkQ-ZPNpxXH/exec';
+
 // Filter state — persists across renders
 let activeFilters = {
   type: 'all',     // all | spending | income | refunds
@@ -394,6 +585,9 @@ let allTransactions = [];        // current month's transactions (filtered)
 let everyTransaction = [];       // ALL transactions across all months
 let activeMonth = null;          // 'YYYY-MM' or null for current month
 let timeRange = 'month';         // 'week' | 'month' | 'year'
+let activeView = 'spending';     // 'spending' | 'investments' | 'networth'
+let portfolioSnapshots = [];
+let manualBalances = [];
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSj7h-tIurn29eq-KVDeZ9W0jRWbXXNkuyJSNfUSntpj4bM2W7FLtGi3vOM5SMVjHNuiuvHJ0h2WWF-/pub?gid=0&single=true&output=csv';
 
@@ -443,40 +637,87 @@ async function loadData() {
   btn.textContent = '↻ ...';
 
   try {
-    // Cache-bust to always get fresh data
-    const url = SHEET_URL + '&_=' + Date.now();
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const csv = await res.text();
-    const rows = parseCSV(csv);
+    let transactions = [];
 
-    if (rows.length < 2) {
-      renderEmpty();
-      dot.className = 'status-dot';
-      btn.disabled = false;
-      btn.textContent = '↻ REFRESH';
-      return;
+    // Prefer Apps Script Worker for live data (with rowIndex for edits)
+    if (WORKER_URL && WORKER_URL.indexOf('PASTE') !== 0) {
+      const res = await fetch(WORKER_URL + '?action=data&_=' + Date.now());
+      if (res.ok) {
+        const data = await res.json();
+        transactions = (data.transactions || []).map(t => ({
+          rowIndex: t.rowIndex,
+          date: t.date,
+          merchant: t.merchant,
+          amount: parseFloat(t.amount) || 0,
+          type: t.type,
+          category: t.category || 'Other',
+          subcategory: t.subcategory || '',
+          account: t.account,
+          notes: t.notes || '',
+          isDebit: (t.type || '').toLowerCase() === 'debit'
+        })).filter(t => t.amount > 0);
+      }
     }
 
-    const headers = rows[0].map(h => h.trim());
-    const transactions = rows.slice(1)
-      .filter(r => r.length >= headers.length && r[0])
-      .map(r => {
-        const obj = {};
-        headers.forEach((h, i) => { obj[h] = r[i]; });
-        return {
-          date: obj.Date,
-          merchant: obj.Merchant,
-          amount: parseFloat(obj.Amount) || 0,
-          type: obj.Type,
-          category: obj.Category || 'Other',
-          account: obj.Account,
-          isDebit: !['credit', 'income', 'deposit'].includes((obj.Type || '').toLowerCase())
-        };
-      })
-      .filter(t => t.amount > 0);
+    // Fallback to CSV if Worker isn't configured or failed
+    if (transactions.length === 0) {
+      const url = SHEET_URL + '&_=' + Date.now();
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const csv = await res.text();
+      const rows = parseCSV(csv);
 
-    render(transactions);
+      if (rows.length < 2) {
+        renderEmpty();
+        dot.className = 'status-dot';
+        btn.disabled = false;
+        btn.textContent = '↻ REFRESH';
+        return;
+      }
+
+      const headers = rows[0].map(h => h.trim());
+      transactions = rows.slice(1)
+        .filter(r => r.length >= headers.length && r[0])
+        .map((r, idx) => {
+          const obj = {};
+          headers.forEach((h, i) => { obj[h] = r[i]; });
+          return {
+            rowIndex: idx + 2,
+            date: obj.Date,
+            merchant: obj.Merchant,
+            amount: parseFloat(obj.Amount) || 0,
+            type: obj.Type,
+            category: obj.Category || 'Other',
+            subcategory: obj.Subcategory || '',
+            account: obj.Account,
+            notes: obj.Notes || '',
+            isDebit: (obj.Type || '').toLowerCase() === 'debit'
+          };
+        })
+        .filter(t => t.amount > 0);
+    }
+
+    // Also fetch portfolio + balances if Worker available
+    if (WORKER_URL && WORKER_URL.indexOf('PASTE') !== 0) {
+      try {
+        const [portRes, balRes] = await Promise.all([
+          fetch(WORKER_URL + '?action=portfolio&_=' + Date.now()),
+          fetch(WORKER_URL + '?action=balances&_=' + Date.now())
+        ]);
+        if (portRes.ok) portfolioSnapshots = (await portRes.json()).snapshots || [];
+        if (balRes.ok) manualBalances = (await balRes.json()).balances || [];
+      } catch (e) { /* ignore */ }
+    }
+
+    if (activeView === 'spending') {
+      render(transactions);
+    } else if (activeView === 'investments') {
+      everyTransaction = transactions;
+      renderInvestments();
+    } else if (activeView === 'networth') {
+      everyTransaction = transactions;
+      renderNetWorth();
+    }
     dot.className = 'status-dot';
   } catch (err) {
     renderError(err.message);
@@ -766,11 +1007,11 @@ function renderTransactionList() {
     html += `<div class="empty" style="padding:24px 12px;font-size:12px"><div class="big" style="font-size:24px">∅</div>No matches for these filters</div>`;
   } else {
     html += filtered.map(tx => `
-      <div class="tx-row">
+      <div class="tx-row" onclick="openEditModal(${tx.rowIndex || 0})">
         <div class="tx-left">
           <span class="cat-dot" style="background:${CAT_COLOR[tx.category] || '#6b7280'}"></span>
           <div class="tx-info">
-            <div class="tx-name">${tx.merchant || 'Unknown'}</div>
+            <div class="tx-name">${tx.merchant || 'Unknown'}${tx.subcategory ? '<span class="tx-subcat">' + tx.subcategory + '</span>' : ''}</div>
             <div class="tx-meta">${tx.category} · ${fmtDate(tx.date)}${tx.account ? ' · ' + tx.account : ''}</div>
           </div>
         </div>
@@ -826,6 +1067,520 @@ function renderError(msg) {
       <div class="msg">${msg}<br><br>Check that your Sheet is published to web as CSV.</div>
     </div>
   `;
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  VIEW SWITCHER
+// ════════════════════════════════════════════════════════════════════
+
+function setView(view) {
+  activeView = view;
+  document.querySelectorAll('.view-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.view === view);
+  });
+  // Hide FAB on investments view (no manual entry needed there)
+  document.getElementById('addFab').style.display =
+    (view === 'investments') ? 'none' : 'flex';
+  loadData();
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  INVESTMENTS VIEW
+// ════════════════════════════════════════════════════════════════════
+
+function renderInvestments() {
+  const root = document.getElementById('content');
+
+  if (portfolioSnapshots.length === 0) {
+    root.innerHTML = `
+      <h1>Investments</h1>
+      <div class="card">
+        <div class="empty">
+          <div class="big">📊</div>
+          No portfolio data yet.<br><br>
+          Run <code style="background:var(--bg);padding:2px 6px;border-radius:3px">scanFidelityPortfolio</code> in your Apps Script after Fidelity sends you a daily summary email.
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Group by account, get latest per account
+  const byAccount = {};
+  portfolioSnapshots.forEach(s => {
+    const date = new Date(s.date);
+    if (!byAccount[s.account] || new Date(byAccount[s.account].date) < date) {
+      byAccount[s.account] = s;
+    }
+  });
+
+  const totalValue = Object.values(byAccount).reduce((sum, s) => sum + Number(s.totalvalue || 0), 0);
+  const totalChange = Object.values(byAccount).reduce((sum, s) => sum + Number(s.daychange || 0), 0);
+  const changePct = totalValue > 0 ? (totalChange / (totalValue - totalChange) * 100) : 0;
+
+  let html = `
+    <h1>Investments</h1>
+
+    <div class="portfolio-card">
+      <div class="card-label">Total Portfolio</div>
+      <div class="portfolio-amount">${fmtMoney(totalValue)}</div>
+      <div class="portfolio-change ${totalChange >= 0 ? 'up' : 'down'}">
+        ${totalChange >= 0 ? '↑' : '↓'} ${fmtMoney(Math.abs(totalChange))} today (${Math.abs(changePct).toFixed(2)}%)
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">By Account</div>
+      ${Object.values(byAccount).map(s => `
+        <div class="balance-row">
+          <div>
+            <div class="balance-name">${s.account}</div>
+            <div class="balance-date">Updated ${fmtDate(s.date)}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="balance-amount">${fmtMoney(Number(s.totalvalue || 0))}</div>
+            <div class="portfolio-change ${Number(s.daychange||0) >= 0 ? 'up' : 'down'}" style="font-size:11px">
+              ${Number(s.daychange||0) >= 0 ? '+' : '−'}${fmtMoney(Math.abs(Number(s.daychange||0)))}
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Trend chart if we have multiple snapshots
+  const sorted = portfolioSnapshots.slice().sort((a,b) => new Date(a.date) - new Date(b.date));
+  if (sorted.length > 3) {
+    // Sum values per date
+    const byDate = {};
+    sorted.forEach(s => {
+      const d = (typeof s.date === 'string' ? s.date : new Date(s.date).toISOString()).split('T')[0];
+      byDate[d] = (byDate[d] || 0) + Number(s.totalvalue || 0);
+    });
+    const points = Object.entries(byDate).sort();
+    const values = points.map(p => p[1]);
+    const min = Math.min(...values), max = Math.max(...values);
+    const range = max - min || 1;
+    const w = 320, h = 100, pad = 6;
+    const xStep = (w - pad*2) / (values.length - 1 || 1);
+    const path = values.map((v, i) => {
+      const x = pad + i * xStep;
+      const y = h - pad - ((v - min) / range) * (h - pad*2);
+      return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+    const lastUp = values[values.length-1] >= values[0];
+
+    html += `
+      <div class="card">
+        <div class="card-label">Trend (${points.length} snapshots)</div>
+        <svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto">
+          <path d="${path}" fill="none" stroke="${lastUp ? '#3ddc84' : '#ff6b6b'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px">
+          <span>${points[0][0]}</span>
+          <span>${points[points.length-1][0]}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  root.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  NET WORTH VIEW
+// ════════════════════════════════════════════════════════════════════
+
+function renderNetWorth() {
+  const root = document.getElementById('content');
+
+  // Get latest balance per account
+  const byAccount = {};
+  manualBalances.forEach(b => {
+    const date = new Date(b.date);
+    if (!byAccount[b.account] || new Date(byAccount[b.account].date) < date) {
+      byAccount[b.account] = b;
+    }
+  });
+
+  // Add Fidelity from portfolio
+  const portByAccount = {};
+  portfolioSnapshots.forEach(s => {
+    const date = new Date(s.date);
+    if (!portByAccount[s.account] || new Date(portByAccount[s.account].date) < date) {
+      portByAccount[s.account] = s;
+    }
+  });
+  Object.values(portByAccount).forEach(s => {
+    byAccount['Fidelity (' + s.account + ')'] = {
+      account: 'Fidelity (' + s.account + ')',
+      balance: s.totalvalue,
+      date: s.date,
+      isPortfolio: true
+    };
+  });
+
+  const accounts = Object.values(byAccount);
+  const netWorth = accounts.reduce((sum, a) => sum + Number(a.balance || 0), 0);
+
+  let html = `
+    <h1>Net Worth</h1>
+
+    <div class="portfolio-card">
+      <div class="card-label">Total Net Worth</div>
+      <div class="portfolio-amount">${fmtMoney(netWorth)}</div>
+      <div class="portfolio-change up">${accounts.length} accounts tracked</div>
+    </div>
+  `;
+
+  if (accounts.length === 0) {
+    html += `
+      <div class="card">
+        <div class="empty">
+          <div class="big">💰</div>
+          No balances logged yet.<br><br>
+          Tap the <b>+</b> button to add account balances manually,<br>
+          or wait for Fidelity portfolio data to sync automatically.
+        </div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="card">
+        <div class="card-label">Accounts</div>
+        ${accounts.sort((a,b) => Number(b.balance||0) - Number(a.balance||0)).map(b => `
+          <div class="balance-row" onclick="${b.isPortfolio ? '' : 'openBalanceModal(\''+ b.account.replace(/\'/g, '\\\'') +'\')'}">
+            <div>
+              <div class="balance-name">${b.account}${b.isPortfolio ? ' <span style="font-size:10px;color:var(--blue)">[AUTO]</span>' : ''}</div>
+              <div class="balance-date">${fmtDate(b.date)}${b.notes ? ' · ' + b.notes : ''}</div>
+            </div>
+            <div class="balance-amount">${fmtMoney(Number(b.balance || 0))}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  root.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  MODALS — edit, add, balance
+// ════════════════════════════════════════════════════════════════════
+
+const MODAL_CATEGORIES = [
+  'Groceries','Dining','Gas','Transport','Shopping','Subscriptions',
+  'Utilities','Health','Entertainment','Travel','Income','Investment',
+  'Transfer','ATM/Cash','Gifts','Charity','Misc Expenses','General',
+  'Reimbursement','Refund','Other'
+];
+
+function closeModal() {
+  document.getElementById('modalRoot').innerHTML = '';
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function openEditModal(rowIndex) {
+  if (!rowIndex) {
+    showToast('Cannot edit — no row index available', 'error');
+    return;
+  }
+  const tx = everyTransaction.find(t => t.rowIndex === rowIndex);
+  if (!tx) return;
+
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">Edit Transaction</div>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Merchant</div>
+          <input class="modal-input" id="ed-merchant" value="${(tx.merchant||'').replace(/"/g,'&quot;')}">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Amount</div>
+          <input class="modal-input" id="ed-amount" type="number" step="0.01" value="${tx.amount}">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Category</div>
+          <div class="modal-cat-grid" id="ed-cat-grid">
+            ${MODAL_CATEGORIES.map(cat => `
+              <button class="modal-cat-btn ${tx.category===cat?'selected':''}" data-cat="${cat}" onclick="selectModalCat(this)">
+                <span class="cat-dot" style="background:${CAT_COLOR[cat]||'#6b7280'}"></span>
+                ${cat}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Subcategory (optional tag)</div>
+          <input class="modal-input" id="ed-subcat" value="${(tx.subcategory||'').replace(/"/g,'&quot;')}" placeholder="e.g. Costco, Whole Foods">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Notes</div>
+          <input class="modal-input" id="ed-notes" value="${(tx.notes||'').replace(/"/g,'&quot;')}" placeholder="Optional">
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-btn danger" onclick="deleteTx(${rowIndex})">Delete</button>
+          <button class="modal-btn ghost" onclick="closeModal()">Cancel</button>
+          <button class="modal-btn primary" onclick="saveEdit(${rowIndex})">Save</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function selectModalCat(btn) {
+  btn.parentElement.querySelectorAll('.modal-cat-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+async function saveEdit(rowIndex) {
+  const merchant = document.getElementById('ed-merchant').value.trim();
+  const amount = parseFloat(document.getElementById('ed-amount').value);
+  const subcat = document.getElementById('ed-subcat').value.trim();
+  const notes = document.getElementById('ed-notes').value.trim();
+  const selectedCat = document.querySelector('#ed-cat-grid .modal-cat-btn.selected');
+  const category = selectedCat ? selectedCat.dataset.cat : null;
+
+  if (!WORKER_URL || WORKER_URL.indexOf('PASTE') === 0) {
+    showToast('Worker URL not configured', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'edit',
+        rowIndex: rowIndex,
+        updates: { Merchant: merchant, Amount: amount, Category: category, Subcategory: subcat, Notes: notes }
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('Saved ✓', 'success');
+      closeModal();
+      loadData();
+    } else {
+      showToast('Error: ' + (data.error || 'unknown'), 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
+}
+
+async function deleteTx(rowIndex) {
+  if (!confirm('Delete this transaction?')) return;
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'delete', rowIndex: rowIndex })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('Deleted ✓', 'success');
+      closeModal();
+      loadData();
+    } else {
+      showToast('Error: ' + data.error, 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
+}
+
+function openAddModal() {
+  if (activeView === 'networth') {
+    openBalanceModal(null);
+    return;
+  }
+  const root = document.getElementById('modalRoot');
+  const today = new Date().toISOString().split('T')[0];
+  root.innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">Add Transaction</div>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Date</div>
+          <input class="modal-input" id="add-date" type="date" value="${today}">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Merchant</div>
+          <input class="modal-input" id="add-merchant" placeholder="e.g. Costco">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Amount</div>
+          <input class="modal-input" id="add-amount" type="number" step="0.01" placeholder="0.00">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Type</div>
+          <select class="modal-select" id="add-type">
+            <option value="debit">Debit (money out)</option>
+            <option value="credit">Credit (money in)</option>
+          </select>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Category</div>
+          <div class="modal-cat-grid" id="add-cat-grid">
+            ${MODAL_CATEGORIES.map(cat => `
+              <button class="modal-cat-btn" data-cat="${cat}" onclick="selectModalCat(this)">
+                <span class="cat-dot" style="background:${CAT_COLOR[cat]||'#6b7280'}"></span>
+                ${cat}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Subcategory (optional)</div>
+          <input class="modal-input" id="add-subcat" placeholder="e.g. Whole Foods">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Account</div>
+          <input class="modal-input" id="add-account" placeholder="e.g. Wells Fargo CC">
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-btn ghost" onclick="closeModal()">Cancel</button>
+          <button class="modal-btn primary" onclick="saveAdd()">Add</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function saveAdd() {
+  const date = document.getElementById('add-date').value;
+  const merchant = document.getElementById('add-merchant').value.trim();
+  const amount = parseFloat(document.getElementById('add-amount').value);
+  const type = document.getElementById('add-type').value;
+  const subcat = document.getElementById('add-subcat').value.trim();
+  const account = document.getElementById('add-account').value.trim();
+  const selectedCat = document.querySelector('#add-cat-grid .modal-cat-btn.selected');
+  const category = selectedCat ? selectedCat.dataset.cat : 'Other';
+
+  if (!merchant || !amount) {
+    showToast('Need merchant + amount', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'add',
+        transaction: { date, merchant, amount, type, category, subcategory: subcat, account }
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('Added ✓', 'success');
+      closeModal();
+      loadData();
+    } else {
+      showToast('Error: ' + data.error, 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
+}
+
+function openBalanceModal(account) {
+  const root = document.getElementById('modalRoot');
+  const today = new Date().toISOString().split('T')[0];
+  root.innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">Update Balance</div>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Account</div>
+          <input class="modal-input" id="bal-account" value="${account || ''}" placeholder="e.g. Wells Fargo Checking">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Balance</div>
+          <input class="modal-input" id="bal-amount" type="number" step="0.01" placeholder="0.00">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Date</div>
+          <input class="modal-input" id="bal-date" type="date" value="${today}">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Notes (optional)</div>
+          <input class="modal-input" id="bal-notes" placeholder="e.g. After paycheck">
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-btn ghost" onclick="closeModal()">Cancel</button>
+          <button class="modal-btn primary" onclick="saveBalance()">Save</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function saveBalance() {
+  const account = document.getElementById('bal-account').value.trim();
+  const balance = parseFloat(document.getElementById('bal-amount').value);
+  const date = document.getElementById('bal-date').value;
+  const notes = document.getElementById('bal-notes').value.trim();
+
+  if (!account || !balance) {
+    showToast('Need account + balance', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'updateBalance', account, balance, date, notes })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('Balance saved ✓', 'success');
+      closeModal();
+      loadData();
+    } else {
+      showToast('Error: ' + data.error, 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
 }
 
 // Pull-to-refresh on iOS
