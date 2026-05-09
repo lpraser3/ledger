@@ -202,6 +202,32 @@
   .tx-amount.debit { color: var(--red); }
   .tx-amount.credit { color: var(--green); }
 
+  /* Range tabs (Week / Month / Year) */
+  .range-tabs {
+    display: flex; gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 12px;
+  }
+  .range-tab {
+    flex: 1;
+    background: transparent; border: none;
+    padding: 9px 6px;
+    color: var(--muted);
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    cursor: pointer; border-radius: 5px;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s;
+  }
+  .range-tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
   /* Month picker */
   .month-picker {
     display: flex; gap: 8px; align-items: center;
@@ -367,6 +393,7 @@ let activeFilters = {
 let allTransactions = [];        // current month's transactions (filtered)
 let everyTransaction = [];       // ALL transactions across all months
 let activeMonth = null;          // 'YYYY-MM' or null for current month
+let timeRange = 'month';         // 'week' | 'month' | 'year'
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSj7h-tIurn29eq-KVDeZ9W0jRWbXXNkuyJSNfUSntpj4bM2W7FLtGi3vOM5SMVjHNuiuvHJ0h2WWF-/pub?gid=0&single=true&output=csv';
 
@@ -479,7 +506,9 @@ function render(transactions) {
   // Store all transactions globally for month switching
   everyTransaction = transactions;
 
-  // Build sorted list of available months (YYYY-MM)
+  const now = new Date();
+
+  // Compute available months (still needed for month nav)
   const monthSet = new Set();
   transactions.forEach(t => {
     const d = new Date(t.date);
@@ -488,27 +517,50 @@ function render(transactions) {
     }
   });
   const months = Array.from(monthSet).sort().reverse();
-  const now = new Date();
   const currentMonthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
-  // Default to current month if it has data, else most recent
   if (!activeMonth || !months.includes(activeMonth)) {
     activeMonth = months.includes(currentMonthKey) ? currentMonthKey : (months[0] || currentMonthKey);
   }
 
+  // Compute date range based on timeRange selection
   const [yr, mo] = activeMonth.split('-').map(Number);
-  const monthStart = new Date(yr, mo - 1, 1);
-  const monthEnd = new Date(yr, mo, 1);
+  let rangeStart, rangeEnd, rangeLabel, rangeSubLabel, scaleFactor;
+
+  if (timeRange === 'week') {
+    // Last 7 days from today
+    rangeEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    rangeStart = new Date(rangeEnd); rangeStart.setDate(rangeStart.getDate() - 7);
+    rangeLabel = 'Last 7 days';
+    rangeSubLabel = rangeStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' – ' + now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    scaleFactor = 7 / 30; // budget scaled to 7 of 30 days
+  } else if (timeRange === 'year') {
+    rangeStart = new Date(now.getFullYear(), 0, 1);
+    rangeEnd = new Date(now.getFullYear() + 1, 0, 1);
+    rangeLabel = String(now.getFullYear());
+    rangeSubLabel = 'YTD · ' + (now.getMonth() + 1) + ' months';
+    scaleFactor = (now.getMonth() + 1); // budget * months elapsed
+  } else {
+    // month
+    rangeStart = new Date(yr, mo - 1, 1);
+    rangeEnd = new Date(yr, mo, 1);
+    const displayDate = new Date(yr, mo - 1, 1);
+    rangeLabel = displayDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    rangeSubLabel = (activeMonth === currentMonthKey) ? 'Current month' : 'Viewing';
+    scaleFactor = 1;
+  }
 
   const monthTx = transactions.filter(t => {
     const d = new Date(t.date);
-    return !isNaN(d) && d >= monthStart && d < monthEnd;
+    return !isNaN(d) && d >= rangeStart && d < rangeEnd;
   });
 
-  // Available months for prev/next navigation
+  // Available months for prev/next navigation (only used in month view)
   const idx = months.indexOf(activeMonth);
   const prevMonth = idx < months.length - 1 ? months[idx + 1] : null;
   const nextMonth = idx > 0 ? months[idx - 1] : null;
+  const isCurrent = activeMonth === currentMonthKey;
+  const effectiveBudget = BUDGET_LIMIT * scaleFactor;
 
   const spent = monthTx.filter(t => t.isDebit && !NON_SPENDING_CATEGORIES.includes(t.category))
     .reduce((s, t) => s + t.amount, 0);
@@ -517,8 +569,8 @@ function render(transactions) {
   const netSpent = spent - refunds;
   const income = monthTx.filter(t => !t.isDebit && (t.category === 'Income' || t.category === 'Transfer'))
     .reduce((s, t) => s + t.amount, 0);
-  const pct = Math.min(Math.round((netSpent / BUDGET_LIMIT) * 100), 100);
-  const pctRaw = (netSpent / BUDGET_LIMIT) * 100;
+  const pct = Math.min(Math.round((netSpent / effectiveBudget) * 100), 100);
+  const pctRaw = (netSpent / effectiveBudget) * 100;
 
   const byCategory = {};
   monthTx.filter(t => t.isDebit && !NON_SPENDING_CATEGORIES.includes(t.category)).forEach(t => {
@@ -526,23 +578,35 @@ function render(transactions) {
   });
   const totalForBars = Object.values(byCategory).reduce((s, v) => s + v, 0) || 1;
 
-  const displayDate = new Date(yr, mo - 1, 1);
-  const monthName = displayDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const isCurrent = activeMonth === currentMonthKey;
-
   const pctColor = pct > 80 ? 'red' : pct > 50 ? 'yellow' : 'green';
   const barColor = pct > 80 ? 'var(--red)' : pct > 50 ? 'var(--yellow)' : 'var(--green)';
 
   let html = `
     <div class="label">✓ LIVE FROM SHEET</div>
-    <div class="month-picker">
-      <button class="month-arrow" onclick="changeMonth('${prevMonth || ''}')" ${prevMonth ? '' : 'disabled'}>‹</button>
-      <div class="month-display">
-        <span class="label">${isCurrent ? 'CURRENT MONTH' : 'VIEWING'}</span>
-        ${monthName}
-      </div>
-      <button class="month-arrow" onclick="changeMonth('${nextMonth || ''}')" ${nextMonth ? '' : 'disabled'}>›</button>
+
+    <div class="range-tabs">
+      <button class="range-tab ${timeRange==='week'?'active':''}" onclick="setRange('week')">Week</button>
+      <button class="range-tab ${timeRange==='month'?'active':''}" onclick="setRange('month')">Month</button>
+      <button class="range-tab ${timeRange==='year'?'active':''}" onclick="setRange('year')">Year</button>
     </div>
+
+    ${timeRange === 'month' ? `
+      <div class="month-picker">
+        <button class="month-arrow" onclick="changeMonth('${prevMonth || ''}')" ${prevMonth ? '' : 'disabled'}>‹</button>
+        <div class="month-display">
+          <span class="label">${rangeSubLabel.toUpperCase()}</span>
+          ${rangeLabel}
+        </div>
+        <button class="month-arrow" onclick="changeMonth('${nextMonth || ''}')" ${nextMonth ? '' : 'disabled'}>›</button>
+      </div>
+    ` : `
+      <div class="month-picker" style="justify-content:center">
+        <div class="month-display">
+          <span class="label">${rangeSubLabel.toUpperCase()}</span>
+          ${rangeLabel}
+        </div>
+      </div>
+    `}
 
     <div class="circle-wrap">
       <svg class="progress-circle" viewBox="0 0 200 200">
@@ -555,7 +619,7 @@ function render(transactions) {
       </svg>
       <div class="circle-text">
         <div class="circle-amount">${fmtMoney(netSpent)}</div>
-        <div class="circle-of">of ${fmtMoney(BUDGET_LIMIT)}</div>
+        <div class="circle-of">of ${fmtMoney(effectiveBudget)}</div>
         <div class="circle-pct ${pctColor}">${pct}% used</div>
       </div>
     </div>
@@ -571,7 +635,7 @@ function render(transactions) {
       </div>
       <div class="summary-card">
         <div class="summary-label">Remaining</div>
-        <div class="summary-value ${pct >= 100 ? 'red' : 'blue'}">${fmtMoney(Math.max(BUDGET_LIMIT - netSpent, 0))}</div>
+        <div class="summary-value ${pct >= 100 ? 'red' : 'blue'}">${fmtMoney(Math.max(effectiveBudget - netSpent, 0))}</div>
       </div>
     </div>
 
@@ -724,6 +788,13 @@ function setFilter(key, value) {
   activeFilters[key] = value;
   const card = document.getElementById('txCard');
   if (card) card.innerHTML = renderTransactionList();
+}
+
+function setRange(range) {
+  timeRange = range;
+  activeFilters = { type: 'all', category: null, account: null };
+  render(everyTransaction);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function changeMonth(monthKey) {
