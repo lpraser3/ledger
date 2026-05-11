@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -20,530 +21,531 @@
     --sans: 'DM Sans', sans-serif;
   }
 
-  html, body {
-    background: var(--bg); color: var(--text);
-    font-family: var(--sans); min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    overscroll-behavior-y: contain;
-  }
+html, body {
+background: var(–bg); color: var(–text);
+font-family: var(–sans); min-height: 100vh;
+-webkit-font-smoothing: antialiased;
+overscroll-behavior-y: contain;
+}
 
-  /* Top bar */
-  .topbar {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(8,8,16,0.92);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 20px;
-    padding-top: max(14px, env(safe-area-inset-top));
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .logo {
-    font-family: var(--mono); font-size: 15px; font-weight: 700;
-    color: #fff; letter-spacing: 0.1em;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--green); flex-shrink: 0;
-    box-shadow: 0 0 8px var(--green);
-  }
-  .status-dot.loading { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); animation: pulse 1.4s infinite; }
-  .status-dot.error { background: var(--red); box-shadow: 0 0 8px var(--red); }
-  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+/* Top bar */
+.topbar {
+position: sticky; top: 0; z-index: 100;
+background: rgba(8,8,16,0.92);
+backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+border-bottom: 1px solid var(–border);
+padding: 14px 20px;
+padding-top: max(14px, env(safe-area-inset-top));
+display: flex; align-items: center; justify-content: space-between;
+}
+.logo {
+font-family: var(–mono); font-size: 15px; font-weight: 700;
+color: #fff; letter-spacing: 0.1em;
+display: flex; align-items: center; gap: 8px;
+}
+.status-dot {
+width: 8px; height: 8px; border-radius: 50%;
+background: var(–green); flex-shrink: 0;
+box-shadow: 0 0 8px var(–green);
+}
+.status-dot.loading { background: var(–yellow); box-shadow: 0 0 8px var(–yellow); animation: pulse 1.4s infinite; }
+.status-dot.error { background: var(–red); box-shadow: 0 0 8px var(–red); }
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
 
-  .refresh-btn {
-    background: transparent; border: 1px solid var(--border);
-    border-radius: 6px; padding: 6px 12px;
-    color: var(--muted); font-family: var(--mono); font-size: 11px;
-    cursor: pointer; -webkit-tap-highlight-color: transparent;
-  }
-  .refresh-btn:active { opacity: 0.6; }
+.refresh-btn {
+background: transparent; border: 1px solid var(–border);
+border-radius: 6px; padding: 6px 12px;
+color: var(–muted); font-family: var(–mono); font-size: 11px;
+cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.refresh-btn:active { opacity: 0.6; }
 
-  .container {
-    max-width: 600px; margin: 0 auto;
-    padding: 24px 20px;
-    padding-bottom: max(48px, env(safe-area-inset-bottom));
-  }
+.container {
+max-width: 600px; margin: 0 auto;
+padding: 24px 20px;
+padding-bottom: max(48px, env(safe-area-inset-bottom));
+}
 
-  /* Headings */
-  .label {
-    font-family: var(--mono); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.2em; color: var(--muted);
-    text-transform: uppercase; margin-bottom: 10px;
-  }
-  h1 {
-    font-family: var(--mono); font-size: 26px; font-weight: 700;
-    color: #fff; letter-spacing: -0.01em; margin-bottom: 24px;
-  }
+/* Headings */
+.label {
+font-family: var(–mono); font-size: 10px; font-weight: 700;
+letter-spacing: 0.2em; color: var(–muted);
+text-transform: uppercase; margin-bottom: 10px;
+}
+h1 {
+font-family: var(–mono); font-size: 26px; font-weight: 700;
+color: #fff; letter-spacing: -0.01em; margin-bottom: 24px;
+}
 
-  /* Cards */
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 18px; margin-bottom: 14px;
-  }
-  .card-label {
-    font-family: var(--mono); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.16em; color: var(--muted);
-    text-transform: uppercase; margin-bottom: 14px;
-  }
+/* Cards */
+.card {
+background: var(–surface); border: 1px solid var(–border);
+border-radius: 12px; padding: 18px; margin-bottom: 14px;
+}
+.card-label {
+font-family: var(–mono); font-size: 10px; font-weight: 700;
+letter-spacing: 0.16em; color: var(–muted);
+text-transform: uppercase; margin-bottom: 14px;
+}
 
-  /* Circular budget chart */
-  .circle-wrap {
-    position: relative;
-    width: 100%; max-width: 280px;
-    margin: 8px auto 28px;
-    aspect-ratio: 1;
-  }
-  .progress-circle {
-    width: 100%; height: 100%;
-    filter: drop-shadow(0 0 12px rgba(61,220,132,0.15));
-  }
-  .circle-text {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center;
-  }
-  .circle-amount {
-    font-family: var(--mono); font-size: 32px; font-weight: 700;
-    color: #fff; letter-spacing: -0.02em;
-  }
-  .circle-of {
-    font-family: var(--mono); font-size: 12px;
-    color: var(--muted); margin-top: 2px;
-  }
-  .circle-pct {
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; margin-top: 8px;
-    text-transform: uppercase;
-  }
-  .circle-pct.red { color: var(--red); }
-  .circle-pct.green { color: var(--green); }
-  .circle-pct.yellow { color: var(--yellow); }
+/* Circular budget chart */
+.circle-wrap {
+position: relative;
+width: 100%; max-width: 280px;
+margin: 8px auto 28px;
+aspect-ratio: 1;
+}
+.progress-circle {
+width: 100%; height: 100%;
+filter: drop-shadow(0 0 12px rgba(61,220,132,0.15));
+}
+.circle-text {
+position: absolute; inset: 0;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+text-align: center;
+}
+.circle-amount {
+font-family: var(–mono); font-size: 32px; font-weight: 700;
+color: #fff; letter-spacing: -0.02em;
+}
+.circle-of {
+font-family: var(–mono); font-size: 12px;
+color: var(–muted); margin-top: 2px;
+}
+.circle-pct {
+font-family: var(–mono); font-size: 11px; font-weight: 700;
+letter-spacing: 0.1em; margin-top: 8px;
+text-transform: uppercase;
+}
+.circle-pct.red { color: var(–red); }
+.circle-pct.green { color: var(–green); }
+.circle-pct.yellow { color: var(–yellow); }
 
-  /* Summary grid */
-  .summary-grid {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px; margin-bottom: 14px;
-  }
-  .summary-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px 12px;
-  }
-  .summary-label {
-    font-family: var(--mono); font-size: 9px; font-weight: 700;
-    letter-spacing: 0.14em; color: var(--muted);
-    text-transform: uppercase; margin-bottom: 8px;
-  }
-  .summary-value {
-    font-family: var(--mono); font-size: 18px; font-weight: 700;
-  }
-  .summary-value.red { color: var(--red); }
-  .summary-value.green { color: var(--green); }
-  .summary-value.yellow { color: var(--yellow); }
-  .summary-value.blue { color: var(--blue); }
+/* Summary grid */
+.summary-grid {
+display: grid; grid-template-columns: 1fr 1fr 1fr;
+gap: 10px; margin-bottom: 14px;
+}
+.summary-card {
+background: var(–surface); border: 1px solid var(–border);
+border-radius: 10px; padding: 14px 12px;
+}
+.summary-label {
+font-family: var(–mono); font-size: 9px; font-weight: 700;
+letter-spacing: 0.14em; color: var(–muted);
+text-transform: uppercase; margin-bottom: 8px;
+}
+.summary-value {
+font-family: var(–mono); font-size: 18px; font-weight: 700;
+}
+.summary-value.red { color: var(–red); }
+.summary-value.green { color: var(–green); }
+.summary-value.yellow { color: var(–yellow); }
+.summary-value.blue { color: var(–blue); }
 
-  /* Budget bar */
-  .budget-row {
-    display: flex; justify-content: space-between;
-    font-size: 11px; font-family: var(--mono); margin-bottom: 8px;
-  }
-  .budget-row span:first-child { color: var(--muted); }
-  .budget-row span:last-child { color: var(--text); }
-  .progress-bar-wrap {
-    background: var(--bg); border-radius: 3px;
-    height: 6px; overflow: hidden;
-  }
-  .progress-bar {
-    height: 100%; border-radius: 3px;
-    width: 0%; transition: width 0.8s ease;
-  }
+/* Budget bar */
+.budget-row {
+display: flex; justify-content: space-between;
+font-size: 11px; font-family: var(–mono); margin-bottom: 8px;
+}
+.budget-row span:first-child { color: var(–muted); }
+.budget-row span:last-child { color: var(–text); }
+.progress-bar-wrap {
+background: var(–bg); border-radius: 3px;
+height: 6px; overflow: hidden;
+}
+.progress-bar {
+height: 100%; border-radius: 3px;
+width: 0%; transition: width 0.8s ease;
+}
 
-  /* Category bars */
-  .cat-bar-row { margin-bottom: 14px; }
-  .cat-bar-row:last-child { margin-bottom: 0; }
-  .cat-bar-label {
-    display: flex; justify-content: space-between;
-    font-size: 12px; margin-bottom: 5px;
-  }
-  .cat-bar-label .left { display: flex; align-items: center; gap: 8px; color: #b0aec8; }
-  .cat-bar-label .right { font-family: var(--mono); font-weight: 700; color: #fff; }
-  .cat-dot {
-    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-  }
-  .cat-bar-track {
-    background: var(--bg); border-radius: 3px; height: 3px;
-  }
-  .cat-bar-fill {
-    height: 100%; border-radius: 3px;
-    transition: width 0.6s ease;
-  }
+/* Category bars */
+.cat-bar-row { margin-bottom: 14px; }
+.cat-bar-row:last-child { margin-bottom: 0; }
+.cat-bar-label {
+display: flex; justify-content: space-between;
+font-size: 12px; margin-bottom: 5px;
+}
+.cat-bar-label .left { display: flex; align-items: center; gap: 8px; color: #b0aec8; }
+.cat-bar-label .right { font-family: var(–mono); font-weight: 700; color: #fff; }
+.cat-dot {
+width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.cat-bar-track {
+background: var(–bg); border-radius: 3px; height: 3px;
+}
+.cat-bar-fill {
+height: 100%; border-radius: 3px;
+transition: width 0.6s ease;
+}
 
-  /* Transaction rows */
-  .tx-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 0; border-bottom: 1px solid var(--border);
-  }
-  .tx-row:last-child { border-bottom: none; }
-  .tx-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
-  .tx-info { min-width: 0; flex: 1; }
-  .tx-name {
-    font-size: 14px; color: #d0cee8; font-weight: 500;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .tx-meta {
-    font-size: 11px; color: var(--muted);
-    margin-top: 2px; font-family: var(--mono);
-  }
-  .tx-amount {
-    font-family: var(--mono); font-size: 14px; font-weight: 700;
-    white-space: nowrap; padding-left: 10px;
-  }
-  .tx-amount.debit { color: var(--red); }
-  .tx-amount.credit { color: var(--green); }
+/* Transaction rows */
+.tx-row {
+display: flex; align-items: center; justify-content: space-between;
+padding: 12px 0; border-bottom: 1px solid var(–border);
+}
+.tx-row:last-child { border-bottom: none; }
+.tx-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.tx-info { min-width: 0; flex: 1; }
+.tx-name {
+font-size: 14px; color: #d0cee8; font-weight: 500;
+overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tx-meta {
+font-size: 11px; color: var(–muted);
+margin-top: 2px; font-family: var(–mono);
+}
+.tx-amount {
+font-family: var(–mono); font-size: 14px; font-weight: 700;
+white-space: nowrap; padding-left: 10px;
+}
+.tx-amount.debit { color: var(–red); }
+.tx-amount.credit { color: var(–green); }
 
-  /* Range tabs (Week / Month / Year) */
-  .range-tabs {
-    display: flex; gap: 0;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 3px;
-    margin-bottom: 12px;
-  }
-  .range-tab {
-    flex: 1;
-    background: transparent; border: none;
-    padding: 9px 6px;
-    color: var(--muted);
-    font-family: var(--mono); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.16em; text-transform: uppercase;
-    cursor: pointer; border-radius: 5px;
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.15s;
-  }
-  .range-tab.active {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
+/* Range tabs (Week / Month / Year) */
+.range-tabs {
+display: flex; gap: 0;
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 3px;
+margin-bottom: 12px;
+}
+.range-tab {
+flex: 1;
+background: transparent; border: none;
+padding: 9px 6px;
+color: var(–muted);
+font-family: var(–mono); font-size: 10px; font-weight: 700;
+letter-spacing: 0.16em; text-transform: uppercase;
+cursor: pointer; border-radius: 5px;
+-webkit-tap-highlight-color: transparent;
+transition: all 0.15s;
+}
+.range-tab.active {
+background: var(–surface);
+color: var(–text);
+box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
 
-  /* Month picker */
-  .month-picker {
-    display: flex; gap: 8px; align-items: center;
-    margin-bottom: 18px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 6px;
-  }
-  .month-arrow {
-    background: transparent; border: none;
-    color: var(--muted); font-size: 18px;
-    width: 36px; height: 36px;
-    border-radius: 7px; cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s, color 0.15s;
-  }
-  .month-arrow:not(:disabled):active { background: var(--border); color: var(--text); }
-  .month-arrow:disabled { opacity: 0.25; cursor: default; }
-  .month-display {
-    flex: 1; text-align: center;
-    font-family: var(--mono); font-size: 13px; font-weight: 700;
-    color: var(--text); letter-spacing: 0.04em;
-    padding: 8px 0;
-  }
-  .month-display .label {
-    display: block; font-size: 9px; font-weight: 700;
-    color: var(--muted); letter-spacing: 0.18em;
-    margin-bottom: 2px;
-  }
+/* Month picker */
+.month-picker {
+display: flex; gap: 8px; align-items: center;
+margin-bottom: 18px;
+background: var(–surface); border: 1px solid var(–border);
+border-radius: 10px; padding: 6px;
+}
+.month-arrow {
+background: transparent; border: none;
+color: var(–muted); font-size: 18px;
+width: 36px; height: 36px;
+border-radius: 7px; cursor: pointer;
+-webkit-tap-highlight-color: transparent;
+display: flex; align-items: center; justify-content: center;
+transition: background 0.15s, color 0.15s;
+}
+.month-arrow:not(:disabled):active { background: var(–border); color: var(–text); }
+.month-arrow:disabled { opacity: 0.25; cursor: default; }
+.month-display {
+flex: 1; text-align: center;
+font-family: var(–mono); font-size: 13px; font-weight: 700;
+color: var(–text); letter-spacing: 0.04em;
+padding: 8px 0;
+}
+.month-display .label {
+display: block; font-size: 9px; font-weight: 700;
+color: var(–muted); letter-spacing: 0.18em;
+margin-bottom: 2px;
+}
 
-  /* Filters */
-  .filter-section {
-    margin-bottom: 14px;
-  }
-  .filter-row {
-    display: flex; gap: 6px; overflow-x: auto;
-    padding: 2px 0 8px;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
-  }
-  .filter-row::-webkit-scrollbar { display: none; }
-  .filter-row { scrollbar-width: none; }
+/* Filters */
+.filter-section {
+margin-bottom: 14px;
+}
+.filter-row {
+display: flex; gap: 6px; overflow-x: auto;
+padding: 2px 0 8px;
+-webkit-overflow-scrolling: touch;
+scroll-snap-type: x proximity;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-row { scrollbar-width: none; }
 
-  .filter-chip {
-    flex-shrink: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 7px 14px;
-    color: var(--muted);
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.04em;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-    scroll-snap-align: start;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .filter-chip:active { transform: scale(0.95); }
-  .filter-chip .dot {
-    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-  }
-  .filter-chip.active {
-    background: rgba(79,172,254,0.12);
-    border-color: var(--blue);
-    color: var(--blue);
-  }
-  .filter-chip .count {
-    color: var(--muted); font-weight: 400; margin-left: 2px;
-  }
-  .filter-chip.active .count { color: var(--blue); opacity: 0.7; }
+.filter-chip {
+flex-shrink: 0;
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 100px;
+padding: 7px 14px;
+color: var(–muted);
+font-family: var(–mono); font-size: 11px; font-weight: 700;
+letter-spacing: 0.04em;
+cursor: pointer;
+-webkit-tap-highlight-color: transparent;
+white-space: nowrap;
+transition: all 0.15s ease;
+scroll-snap-align: start;
+display: flex; align-items: center; gap: 6px;
+}
+.filter-chip:active { transform: scale(0.95); }
+.filter-chip .dot {
+width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.filter-chip.active {
+background: rgba(79,172,254,0.12);
+border-color: var(–blue);
+color: var(–blue);
+}
+.filter-chip .count {
+color: var(–muted); font-weight: 400; margin-left: 2px;
+}
+.filter-chip.active .count { color: var(–blue); opacity: 0.7; }
 
-  .filter-tabs {
-    display: flex; gap: 0;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 3px;
-    margin-bottom: 10px;
-  }
-  .filter-tab {
-    flex: 1;
-    background: transparent; border: none;
-    padding: 8px 6px;
-    color: var(--muted);
-    font-family: var(--mono); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    cursor: pointer; border-radius: 5px;
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.15s;
-  }
-  .filter-tab.active {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
+.filter-tabs {
+display: flex; gap: 0;
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 3px;
+margin-bottom: 10px;
+}
+.filter-tab {
+flex: 1;
+background: transparent; border: none;
+padding: 8px 6px;
+color: var(–muted);
+font-family: var(–mono); font-size: 10px; font-weight: 700;
+letter-spacing: 0.1em; text-transform: uppercase;
+cursor: pointer; border-radius: 5px;
+-webkit-tap-highlight-color: transparent;
+transition: all 0.15s;
+}
+.filter-tab.active {
+background: var(–surface);
+color: var(–text);
+box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
 
-  .filter-summary {
-    display: flex; justify-content: space-between;
-    font-family: var(--mono); font-size: 11px;
-    margin-bottom: 12px;
-  }
-  .filter-summary .left { color: var(--muted); }
-  .filter-summary .right { color: var(--text); font-weight: 700; }
+.filter-summary {
+display: flex; justify-content: space-between;
+font-family: var(–mono); font-size: 11px;
+margin-bottom: 12px;
+}
+.filter-summary .left { color: var(–muted); }
+.filter-summary .right { color: var(–text); font-weight: 700; }
 
-  /* Empty state */
-  .empty {
-    color: var(--muted); line-height: 1.8; font-size: 14px;
-    text-align: center; padding: 40px 20px;
-  }
-  .empty .big { font-size: 32px; margin-bottom: 16px; }
+/* Empty state */
+.empty {
+color: var(–muted); line-height: 1.8; font-size: 14px;
+text-align: center; padding: 40px 20px;
+}
+.empty .big { font-size: 32px; margin-bottom: 16px; }
 
-  /* Loader */
-  .loading-msg {
-    color: var(--muted); font-family: var(--mono); font-size: 12px;
-    text-align: center; padding: 80px 20px;
-  }
+/* Loader */
+.loading-msg {
+color: var(–muted); font-family: var(–mono); font-size: 12px;
+text-align: center; padding: 80px 20px;
+}
 
-  /* Error */
-  .error-card {
-    background: rgba(255,107,107,0.06);
-    border: 1px solid rgba(255,107,107,0.3);
-    border-radius: 10px; padding: 16px;
-    margin-bottom: 14px;
-  }
-  .error-card .label { color: var(--red); margin-bottom: 6px; }
-  .error-card .msg { font-size: 13px; line-height: 1.6; color: #f4c0c0; }
+/* Error */
+.error-card {
+background: rgba(255,107,107,0.06);
+border: 1px solid rgba(255,107,107,0.3);
+border-radius: 10px; padding: 16px;
+margin-bottom: 14px;
+}
+.error-card .label { color: var(–red); margin-bottom: 6px; }
+.error-card .msg { font-size: 13px; line-height: 1.6; color: #f4c0c0; }
 
-  /* Last updated */
-  .footer-info {
-    margin-top: 24px; text-align: center;
-    font-family: var(--mono); font-size: 10px; color: var(--muted);
-    letter-spacing: 0.1em;
-  }
+/* Last updated */
+.footer-info {
+margin-top: 24px; text-align: center;
+font-family: var(–mono); font-size: 10px; color: var(–muted);
+letter-spacing: 0.1em;
+}
 
-  /* View tabs (top-level: Spending / Investments / Net Worth) */
-  .view-tabs {
-    display: flex; gap: 4px;
-    margin-bottom: 18px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 4px;
-  }
-  .view-tab {
-    flex: 1; background: transparent; border: none;
-    padding: 10px 6px;
-    color: var(--muted);
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    cursor: pointer; border-radius: 7px;
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.15s;
-  }
-  .view-tab.active {
-    background: var(--blue); color: #000;
-  }
+/* View tabs (top-level: Spending / Investments / Net Worth) */
+.view-tabs {
+display: flex; gap: 4px;
+margin-bottom: 18px;
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 4px;
+}
+.view-tab {
+flex: 1; background: transparent; border: none;
+padding: 10px 4px;
+color: var(–muted);
+font-family: var(–mono); font-size: 10px; font-weight: 700;
+letter-spacing: 0.06em; text-transform: uppercase;
+cursor: pointer; border-radius: 7px;
+-webkit-tap-highlight-color: transparent;
+transition: all 0.15s;
+}
+.view-tab.active {
+background: var(–blue); color: #000;
+}
 
-  /* Floating action button */
-  .fab {
-    position: fixed; right: 24px;
-    bottom: max(24px, env(safe-area-inset-bottom));
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    background: var(--blue);
-    border: none; color: #000;
-    font-size: 24px; font-weight: 700;
-    cursor: pointer; z-index: 50;
-    box-shadow: 0 4px 16px rgba(79,172,254,0.4);
-    -webkit-tap-highlight-color: transparent;
-    transition: transform 0.12s;
-  }
-  .fab:active { transform: scale(0.92); }
+/* Floating action button */
+.fab {
+position: fixed; right: 24px;
+bottom: max(24px, env(safe-area-inset-bottom));
+width: 56px; height: 56px;
+border-radius: 50%;
+background: var(–blue);
+border: none; color: #000;
+font-size: 24px; font-weight: 700;
+cursor: pointer; z-index: 50;
+box-shadow: 0 4px 16px rgba(79,172,254,0.4);
+-webkit-tap-highlight-color: transparent;
+transition: transform 0.12s;
+}
+.fab:active { transform: scale(0.92); }
 
-  /* Modal / bottom sheet */
-  .modal-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 200;
-    display: flex; align-items: flex-end; justify-content: center;
-    animation: fadeIn 0.15s;
-  }
-  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-  .modal {
-    background: var(--surface);
-    border-top-left-radius: 18px; border-top-right-radius: 18px;
-    width: 100%; max-width: 600px;
-    max-height: 85vh; overflow-y: auto;
-    padding: 24px 20px;
-    padding-bottom: max(24px, env(safe-area-inset-bottom));
-    animation: slideUp 0.2s ease;
-    border-top: 1px solid var(--border);
-  }
-  @keyframes slideUp { from { transform: translateY(40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+/* Modal / bottom sheet */
+.modal-backdrop {
+position: fixed; inset: 0;
+background: rgba(0,0,0,0.6);
+backdrop-filter: blur(4px);
+-webkit-backdrop-filter: blur(4px);
+z-index: 200;
+display: flex; align-items: flex-end; justify-content: center;
+animation: fadeIn 0.15s;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+.modal {
+background: var(–surface);
+border-top-left-radius: 18px; border-top-right-radius: 18px;
+width: 100%; max-width: 600px;
+max-height: 85vh; overflow-y: auto;
+padding: 24px 20px;
+padding-bottom: max(24px, env(safe-area-inset-bottom));
+animation: slideUp 0.2s ease;
+border-top: 1px solid var(–border);
+}
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
 
-  .modal-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    margin-bottom: 20px;
-  }
-  .modal-title {
-    font-family: var(--mono); font-size: 16px; font-weight: 700; color: #fff;
-    letter-spacing: 0.04em;
-  }
-  .modal-close {
-    background: transparent; border: none;
-    color: var(--muted); font-size: 22px;
-    cursor: pointer; padding: 0;
-    -webkit-tap-highlight-color: transparent;
-    width: 28px; height: 28px;
-  }
+.modal-header {
+display: flex; justify-content: space-between; align-items: flex-start;
+margin-bottom: 20px;
+}
+.modal-title {
+font-family: var(–mono); font-size: 16px; font-weight: 700; color: #fff;
+letter-spacing: 0.04em;
+}
+.modal-close {
+background: transparent; border: none;
+color: var(–muted); font-size: 22px;
+cursor: pointer; padding: 0;
+-webkit-tap-highlight-color: transparent;
+width: 28px; height: 28px;
+}
 
-  .modal-section { margin-bottom: 16px; }
-  .modal-label {
-    font-family: var(--mono); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.14em; color: var(--muted);
-    text-transform: uppercase; margin-bottom: 6px;
-  }
-  .modal-input, .modal-select {
-    width: 100%; background: var(--bg);
-    border: 1px solid var(--border); border-radius: 7px;
-    padding: 11px 12px; color: var(--text);
-    font-size: 14px; font-family: var(--mono);
-    -webkit-appearance: none;
-  }
-  .modal-input:focus, .modal-select:focus { outline: none; border-color: var(--blue); }
+.modal-section { margin-bottom: 16px; }
+.modal-label {
+font-family: var(–mono); font-size: 10px; font-weight: 700;
+letter-spacing: 0.14em; color: var(–muted);
+text-transform: uppercase; margin-bottom: 6px;
+}
+.modal-input, .modal-select {
+width: 100%; background: var(–bg);
+border: 1px solid var(–border); border-radius: 7px;
+padding: 11px 12px; color: var(–text);
+font-size: 14px; font-family: var(–mono);
+-webkit-appearance: none;
+}
+.modal-input:focus, .modal-select:focus { outline: none; border-color: var(–blue); }
 
-  .modal-cat-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
-  }
-  .modal-cat-btn {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 7px; padding: 10px 8px;
-    color: var(--muted); font-size: 11px; font-family: var(--mono);
-    cursor: pointer; display: flex; align-items: center; gap: 6px;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .modal-cat-btn.selected {
-    border-color: var(--blue); color: var(--blue);
-    background: rgba(79,172,254,0.08);
-  }
+.modal-cat-grid {
+display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+}
+.modal-cat-btn {
+background: var(–bg); border: 1px solid var(–border);
+border-radius: 7px; padding: 10px 8px;
+color: var(–muted); font-size: 11px; font-family: var(–mono);
+cursor: pointer; display: flex; align-items: center; gap: 6px;
+-webkit-tap-highlight-color: transparent;
+}
+.modal-cat-btn.selected {
+border-color: var(–blue); color: var(–blue);
+background: rgba(79,172,254,0.08);
+}
 
-  .modal-actions {
-    display: flex; gap: 10px; margin-top: 24px;
-  }
-  .modal-btn {
-    flex: 1; padding: 13px;
-    border-radius: 8px; border: none;
-    font-family: var(--mono); font-size: 12px; font-weight: 700;
-    letter-spacing: 0.1em; cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .modal-btn.primary { background: var(--blue); color: #000; }
-  .modal-btn.danger { background: rgba(255,107,107,0.15); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
-  .modal-btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.modal-actions {
+display: flex; gap: 10px; margin-top: 24px;
+}
+.modal-btn {
+flex: 1; padding: 13px;
+border-radius: 8px; border: none;
+font-family: var(–mono); font-size: 12px; font-weight: 700;
+letter-spacing: 0.1em; cursor: pointer;
+-webkit-tap-highlight-color: transparent;
+}
+.modal-btn.primary { background: var(–blue); color: #000; }
+.modal-btn.danger { background: rgba(255,107,107,0.15); color: var(–red); border: 1px solid rgba(255,107,107,0.3); }
+.modal-btn.ghost { background: transparent; color: var(–muted); border: 1px solid var(–border); }
 
-  /* Tappable transaction row */
-  .tx-row { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
-  .tx-row:active { background: rgba(255,255,255,0.02); }
+/* Tappable transaction row */
+.tx-row { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
+.tx-row:active { background: rgba(255,255,255,0.02); }
 
-  .tx-subcat {
-    color: #6a6a8a;
-    background: rgba(255,255,255,0.03);
-    padding: 1px 6px;
-    border-radius: 3px;
-    margin-left: 6px;
-    font-size: 10px;
-  }
+.tx-subcat {
+color: #6a6a8a;
+background: rgba(255,255,255,0.03);
+padding: 1px 6px;
+border-radius: 3px;
+margin-left: 6px;
+font-size: 10px;
+}
 
-  /* Investments view */
-  .portfolio-card {
-    background: linear-gradient(135deg, #0f1929 0%, #0d1521 100%);
-    border: 1px solid rgba(79,172,254,0.2);
-    border-radius: 14px;
-    padding: 22px;
-    margin-bottom: 14px;
-  }
-  .portfolio-amount {
-    font-family: var(--mono); font-size: 32px; font-weight: 700;
-    color: #fff; margin-bottom: 4px;
-  }
-  .portfolio-change {
-    font-family: var(--mono); font-size: 13px; font-weight: 700;
-  }
-  .portfolio-change.up { color: var(--green); }
-  .portfolio-change.down { color: var(--red); }
+/* Investments view */
+.portfolio-card {
+background: linear-gradient(135deg, #0f1929 0%, #0d1521 100%);
+border: 1px solid rgba(79,172,254,0.2);
+border-radius: 14px;
+padding: 22px;
+margin-bottom: 14px;
+}
+.portfolio-amount {
+font-family: var(–mono); font-size: 32px; font-weight: 700;
+color: #fff; margin-bottom: 4px;
+}
+.portfolio-change {
+font-family: var(–mono); font-size: 13px; font-weight: 700;
+}
+.portfolio-change.up { color: var(–green); }
+.portfolio-change.down { color: var(–red); }
 
-  /* Net worth view */
-  .balance-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 14px 0; border-bottom: 1px solid var(--border);
-    cursor: pointer; -webkit-tap-highlight-color: transparent;
-  }
-  .balance-row:last-child { border-bottom: none; }
-  .balance-row:active { background: rgba(255,255,255,0.02); }
-  .balance-name { color: var(--text); font-weight: 500; }
-  .balance-date { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 3px; }
-  .balance-amount { font-family: var(--mono); font-size: 16px; font-weight: 700; color: #fff; }
+/* Net worth view */
+.balance-row {
+display: flex; justify-content: space-between; align-items: center;
+padding: 14px 0; border-bottom: 1px solid var(–border);
+cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.balance-row:last-child { border-bottom: none; }
+.balance-row:active { background: rgba(255,255,255,0.02); }
+.balance-name { color: var(–text); font-weight: 500; }
+.balance-date { font-family: var(–mono); font-size: 11px; color: var(–muted); margin-top: 3px; }
+.balance-amount { font-family: var(–mono); font-size: 16px; font-weight: 700; color: #fff; }
 
-  .toast {
-    position: fixed; left: 50%; bottom: 100px;
-    transform: translateX(-50%);
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 18px;
-    color: var(--text); font-family: var(--mono); font-size: 12px;
-    z-index: 300; opacity: 0; pointer-events: none;
-    transition: opacity 0.2s;
-  }
-  .toast.show { opacity: 1; }
-  .toast.success { border-color: rgba(61,220,132,0.3); color: var(--green); }
-  .toast.error { border-color: rgba(255,107,107,0.3); color: var(--red); }
+.toast {
+position: fixed; left: 50%; bottom: 100px;
+transform: translateX(-50%);
+background: var(–surface); border: 1px solid var(–border);
+border-radius: 8px; padding: 10px 18px;
+color: var(–text); font-family: var(–mono); font-size: 12px;
+z-index: 300; opacity: 0; pointer-events: none;
+transition: opacity 0.2s;
+}
+.toast.show { opacity: 1; }
+.toast.success { border-color: rgba(61,220,132,0.3); color: var(–green); }
+.toast.error { border-color: rgba(255,107,107,0.3); color: var(–red); }
 
-  ::-webkit-scrollbar { width: 0; }
+::-webkit-scrollbar { width: 0; }
 </style>
+
 </head>
 <body>
 
@@ -558,6 +560,7 @@
 <div class="container">
   <div class="view-tabs">
     <button class="view-tab active" data-view="spending" onclick="setView('spending')">Spending</button>
+    <button class="view-tab" data-view="wishlist" onclick="setView('wishlist')">Wishlist</button>
     <button class="view-tab" data-view="investments" onclick="setView('investments')">Investments</button>
     <button class="view-tab" data-view="networth" onclick="setView('networth')">Net Worth</button>
   </div>
@@ -567,13 +570,14 @@
 </div>
 
 <button class="fab" onclick="openAddModal()" id="addFab">+</button>
+
 <div id="modalRoot"></div>
 <div id="toast" class="toast"></div>
 
 <script>
 // === CONFIG ===
 // Paste your Apps Script Web App URL here after deploying:
-const WORKER_URL = 'https://script.google.com/macros/s/AKfycbyQbydMp2LMtFPMT6pL3ziZs70Q4M3eAeiQsLzeXsVi8gWfHgsEZdm9WqkQ-ZPNpxXH/exec';
+const WORKER_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 // Filter state — persists across renders
 let activeFilters = {
@@ -588,6 +592,8 @@ let timeRange = 'month';         // 'week' | 'month' | 'year'
 let activeView = 'spending';     // 'spending' | 'investments' | 'networth'
 let portfolioSnapshots = [];
 let manualBalances = [];
+let wishlistItems = [];
+let selectedWishIds = new Set();
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSj7h-tIurn29eq-KVDeZ9W0jRWbXXNkuyJSNfUSntpj4bM2W7FLtGi3vOM5SMVjHNuiuvHJ0h2WWF-/pub?gid=0&single=true&output=csv';
 
@@ -700,12 +706,14 @@ async function loadData() {
     // Also fetch portfolio + balances if Worker available
     if (WORKER_URL && WORKER_URL.indexOf('PASTE') !== 0) {
       try {
-        const [portRes, balRes] = await Promise.all([
+        const [portRes, balRes, wishRes] = await Promise.all([
           fetch(WORKER_URL + '?action=portfolio&_=' + Date.now()),
-          fetch(WORKER_URL + '?action=balances&_=' + Date.now())
+          fetch(WORKER_URL + '?action=balances&_=' + Date.now()),
+          fetch(WORKER_URL + '?action=wishlist&_=' + Date.now())
         ]);
         if (portRes.ok) portfolioSnapshots = (await portRes.json()).snapshots || [];
         if (balRes.ok) manualBalances = (await balRes.json()).balances || [];
+        if (wishRes.ok) wishlistItems = (await wishRes.json()).items || [];
       } catch (e) { /* ignore */ }
     }
 
@@ -717,6 +725,9 @@ async function loadData() {
     } else if (activeView === 'networth') {
       everyTransaction = transactions;
       renderNetWorth();
+    } else if (activeView === 'wishlist') {
+      everyTransaction = transactions;
+      renderWishlist();
     }
     dot.className = 'status-dot';
   } catch (err) {
@@ -1078,7 +1089,7 @@ function setView(view) {
   document.querySelectorAll('.view-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.view === view);
   });
-  // Hide FAB on investments view (no manual entry needed there)
+  // FAB visible on all except investments
   document.getElementById('addFab').style.display =
     (view === 'investments') ? 'none' : 'flex';
   loadData();
@@ -1186,6 +1197,287 @@ function renderInvestments() {
 
   root.innerHTML = html;
 }
+
+// ════════════════════════════════════════════════════════════════════
+//  WISHLIST VIEW
+// ════════════════════════════════════════════════════════════════════
+
+function renderWishlist() {
+  const root = document.getElementById('content');
+
+  // Compute remaining budget for THIS month
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const monthTx = everyTransaction.filter(t => {
+    const d = new Date(t.date);
+    return !isNaN(d) && d >= monthStart && d < monthEnd;
+  });
+  const spent = monthTx.filter(t => t.isDebit && !NON_SPENDING_CATEGORIES.includes(t.category))
+    .reduce((s, t) => s + t.amount, 0);
+  const refunds = monthTx.filter(t => !t.isDebit && (t.category === 'Refund' || t.category === 'Reimbursement'))
+    .reduce((s, t) => s + t.amount, 0);
+  const netSpent = spent - refunds;
+  const remaining = Math.max(BUDGET_LIMIT - netSpent, 0);
+
+  // Filter out purchased items
+  const items = wishlistItems.filter(w => !w.purchased);
+  items.sort((a, b) => {
+    const pA = Number(a.priority) || 2;
+    const pB = Number(b.priority) || 2;
+    if (pA !== pB) return pA - pB;
+    return Number(a.cost) - Number(b.cost);
+  });
+
+  // Compute total of selected items
+  const selectedTotal = items
+    .filter(i => selectedWishIds.has(i.rowIndex))
+    .reduce((s, i) => s + (Number(i.cost) || 0), 0);
+  const afterSelection = remaining - selectedTotal;
+  const overBudget = afterSelection < 0;
+
+  let html = `
+    <h1>Wishlist</h1>
+
+    <div class="wishlist-summary">
+      <div class="wishlist-summary-row">
+        <span class="ws-label">Remaining this month</span>
+        <span class="ws-value big ${remaining > 0 ? 'green' : 'red'}">${fmtMoney(remaining)}</span>
+      </div>
+      <div class="wishlist-summary-row">
+        <span class="ws-label">Selected (${selectedWishIds.size})</span>
+        <span class="ws-value">${fmtMoney(selectedTotal)}</span>
+      </div>
+      <div class="wishlist-summary-row">
+        <span class="ws-label">After purchase</span>
+        <span class="ws-value ${overBudget ? 'red' : afterSelection < remaining * 0.2 ? 'yellow' : 'green'}">${overBudget ? '−' : ''}${fmtMoney(Math.abs(afterSelection))}</span>
+      </div>
+
+      ${items.length > 0 ? `
+        <div class="wishlist-actions">
+          <button class="wishlist-action-btn" onclick="autoFitWishlist()">⚡ Best Fit</button>
+          <button class="wishlist-action-btn" onclick="clearWishSelection()">Clear</button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  if (items.length === 0) {
+    html += `
+      <div class="card">
+        <div class="empty">
+          <div class="big">🎁</div>
+          Your wishlist is empty.<br><br>
+          Tap the <b>+</b> button to add things you want to buy.
+        </div>
+      </div>
+    `;
+  } else {
+    html += `<div class="card"><div class="card-label">Items (${items.length})</div>`;
+    items.forEach(item => {
+      const isSel = selectedWishIds.has(item.rowIndex);
+      const cost = Number(item.cost) || 0;
+      const cantAfford = cost > remaining;
+      const priority = Number(item.priority) || 2;
+      html += `
+        <div class="wish-item ${isSel ? 'selected' : ''} ${cantAfford && !isSel ? 'over-budget' : ''}" onclick="toggleWish(${item.rowIndex})">
+          <div class="wish-checkbox"></div>
+          <div class="wish-info">
+            <div class="wish-name">${item.item}</div>
+            <div class="wish-meta">
+              <span class="wish-priority p${priority}">P${priority}</span>
+              ${item.notes ? '<span>· ' + item.notes + '</span>' : ''}
+            </div>
+          </div>
+          <div class="wish-cost">${fmtMoney(cost)}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+
+    // Edit link
+    html += `
+      <div style="margin-top:12px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
+        Long-press an item to edit · or tap a row to select for budget combos
+      </div>
+    `;
+  }
+
+  root.innerHTML = html;
+}
+
+function toggleWish(rowIndex) {
+  if (selectedWishIds.has(rowIndex)) selectedWishIds.delete(rowIndex);
+  else selectedWishIds.add(rowIndex);
+  renderWishlist();
+}
+
+function clearWishSelection() {
+  selectedWishIds = new Set();
+  renderWishlist();
+}
+
+// Greedy: pick highest priority items first, fitting within remaining budget
+function autoFitWishlist() {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const monthTx = everyTransaction.filter(t => {
+    const d = new Date(t.date);
+    return !isNaN(d) && d >= monthStart && d < monthEnd;
+  });
+  const spent = monthTx.filter(t => t.isDebit && !NON_SPENDING_CATEGORIES.includes(t.category))
+    .reduce((s, t) => s + t.amount, 0);
+  const refunds = monthTx.filter(t => !t.isDebit && (t.category === 'Refund' || t.category === 'Reimbursement'))
+    .reduce((s, t) => s + t.amount, 0);
+  const remaining = BUDGET_LIMIT - (spent - refunds);
+
+  selectedWishIds = new Set();
+  const items = wishlistItems.filter(w => !w.purchased)
+    .slice()
+    .sort((a, b) => {
+      const pA = Number(a.priority) || 2;
+      const pB = Number(b.priority) || 2;
+      if (pA !== pB) return pA - pB; // higher priority first (P1 before P3)
+      return Number(a.cost) - Number(b.cost); // cheaper first within priority
+    });
+
+  let used = 0;
+  for (const item of items) {
+    const cost = Number(item.cost) || 0;
+    if (used + cost <= remaining) {
+      selectedWishIds.add(item.rowIndex);
+      used += cost;
+    }
+  }
+  renderWishlist();
+  showToast(`Selected ${selectedWishIds.size} items totaling ${fmtMoney(used)}`, 'success');
+}
+
+function openWishlistModal(item) {
+  const root = document.getElementById('modalRoot');
+  const editing = !!item;
+  root.innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">${editing ? 'Edit Item' : 'Add to Wishlist'}</div>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Item</div>
+          <input class="modal-input" id="wish-item" value="${item ? (item.item||'').replace(/"/g,'&quot;') : ''}" placeholder="e.g. Hiking boots">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Cost</div>
+          <input class="modal-input" id="wish-cost" type="number" step="0.01" value="${item ? item.cost : ''}" placeholder="0.00">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Priority</div>
+          <div class="modal-cat-grid" id="wish-pri-grid" style="grid-template-columns:repeat(3,1fr)">
+            <button class="modal-cat-btn ${(item && Number(item.priority)===1) || !item ? 'selected' : ''}" data-pri="1" onclick="selectWishPri(this)">
+              <span class="wish-priority p1">P1</span> Must
+            </button>
+            <button class="modal-cat-btn ${item && Number(item.priority)===2 ? 'selected' : ''}" data-pri="2" onclick="selectWishPri(this)">
+              <span class="wish-priority p2">P2</span> Want
+            </button>
+            <button class="modal-cat-btn ${item && Number(item.priority)===3 ? 'selected' : ''}" data-pri="3" onclick="selectWishPri(this)">
+              <span class="wish-priority p3">P3</span> Nice
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Notes (optional)</div>
+          <input class="modal-input" id="wish-notes" value="${item ? (item.notes||'').replace(/"/g,'&quot;') : ''}" placeholder="e.g. From REI">
+        </div>
+
+        <div class="modal-actions">
+          ${editing ? '<button class="modal-btn danger" onclick="deleteWishItem(' + item.rowIndex + ')">Delete</button>' : ''}
+          <button class="modal-btn ghost" onclick="closeModal()">Cancel</button>
+          <button class="modal-btn primary" onclick="saveWish(${editing ? item.rowIndex : 'null'})">${editing ? 'Save' : 'Add'}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function selectWishPri(btn) {
+  btn.parentElement.querySelectorAll('.modal-cat-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+async function saveWish(rowIndex) {
+  const item = document.getElementById('wish-item').value.trim();
+  const cost = parseFloat(document.getElementById('wish-cost').value);
+  const notes = document.getElementById('wish-notes').value.trim();
+  const selPri = document.querySelector('#wish-pri-grid .modal-cat-btn.selected');
+  const priority = selPri ? Number(selPri.dataset.pri) : 2;
+
+  if (!item || !cost) { showToast('Need item + cost', 'error'); return; }
+
+  try {
+    const body = rowIndex
+      ? { action: 'editWishlist', rowIndex, updates: { Item: item, Cost: cost, Priority: priority, Notes: notes } }
+      : { action: 'addWishlist', item, cost, priority, notes };
+
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast(rowIndex ? 'Saved ✓' : 'Added ✓', 'success');
+      closeModal();
+      loadData();
+    } else {
+      showToast('Error: ' + data.error, 'error');
+    }
+  } catch (e) { showToast('Network error', 'error'); }
+}
+
+async function deleteWishItem(rowIndex) {
+  if (!confirm('Remove from wishlist?')) return;
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'deleteWishlist', rowIndex })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      selectedWishIds.delete(rowIndex);
+      showToast('Removed ✓', 'success');
+      closeModal();
+      loadData();
+    }
+  } catch (e) { showToast('Network error', 'error'); }
+}
+
+// Long-press to edit wishlist item
+let wishLongPressTimer = null;
+document.addEventListener('touchstart', e => {
+  const wishItem = e.target.closest('.wish-item');
+  if (!wishItem) return;
+  wishLongPressTimer = setTimeout(() => {
+    const rowIdx = wishItem.getAttribute('onclick').match(/toggleWish\((\d+)\)/);
+    if (rowIdx) {
+      const item = wishlistItems.find(w => w.rowIndex === Number(rowIdx[1]));
+      if (item) openWishlistModal(item);
+    }
+    wishLongPressTimer = null;
+  }, 500);
+}, { passive: true });
+document.addEventListener('touchend', () => {
+  if (wishLongPressTimer) { clearTimeout(wishLongPressTimer); wishLongPressTimer = null; }
+}, { passive: true });
+document.addEventListener('touchmove', () => {
+  if (wishLongPressTimer) { clearTimeout(wishLongPressTimer); wishLongPressTimer = null; }
+}, { passive: true });
 
 // ════════════════════════════════════════════════════════════════════
 //  NET WORTH VIEW
@@ -1412,6 +1704,10 @@ function openAddModal() {
     openBalanceModal(null);
     return;
   }
+  if (activeView === 'wishlist') {
+    openWishlistModal(null);
+    return;
+  }
   const root = document.getElementById('modalRoot');
   const today = new Date().toISOString().split('T')[0];
   root.innerHTML = `
@@ -1593,5 +1889,6 @@ document.addEventListener('touchend', e => {
 
 loadData();
 </script>
+
 </body>
 </html>
