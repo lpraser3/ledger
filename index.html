@@ -793,6 +793,121 @@
     flex-shrink: 0;
   }
 
+  /* Bucket category visual treatment */
+  .modal-cat-btn[data-cat^="Bucket:"] {
+    background: rgba(94,234,212,0.05);
+    border-color: rgba(94,234,212,0.2);
+  }
+  .modal-cat-btn[data-cat^="Bucket:"].selected {
+    background: rgba(94,234,212,0.15);
+    border-color: #5eead4;
+    color: #5eead4;
+  }
+
+  .bucket-marker {
+    display: inline-block;
+    margin-right: 4px;
+    font-size: 11px;
+  }
+
+  /* Split modal */
+  .split-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .split-row .amount-input {
+    width: 100px;
+    flex-shrink: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    -webkit-appearance: none;
+  }
+  .split-row select {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    -webkit-appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 14px) center, calc(100% - 9px) center;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 26px;
+  }
+  .split-row .remove-split {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    border-radius: 6px;
+    color: var(--red);
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .split-add-btn {
+    width: 100%;
+    background: rgba(79,172,254,0.08);
+    border: 1px dashed rgba(79,172,254,0.4);
+    border-radius: 7px;
+    padding: 11px;
+    color: var(--blue);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    margin-top: 4px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .split-summary {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 12px;
+    margin-top: 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .split-summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  .split-summary-row:last-child { margin-bottom: 0; padding-top: 7px; border-top: 1px solid var(--border); font-weight: 700; }
+  .split-summary .ok { color: var(--green); }
+  .split-summary .mismatch { color: var(--red); }
+
+  /* Split indicator on transaction rows */
+  .split-indicator {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: rgba(167,139,250,0.12);
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #a78bfa;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
   /* Toast */
   .toast {
     position: fixed; left: 50%; bottom: 100px;
@@ -862,7 +977,12 @@ let selectedWishIds = new Set();
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSj7h-tIurn29eq-KVDeZ9W0jRWbXXNkuyJSNfUSntpj4bM2W7FLtGi3vOM5SMVjHNuiuvHJ0h2WWF-/pub?gid=0&single=true&output=csv';
 
 const BUDGET_LIMIT = 950; // edit this to your monthly limit
-const NON_SPENDING_CATEGORIES = ['Transfer', 'Investment', 'Gifts', 'Charity', 'Refund', 'Reimbursement', 'Income'];
+const NON_SPENDING_CATEGORIES = ['Transfer', 'Investment', 'Gifts', 'Charity', 'Refund', 'Reimbursement', 'Income',
+  'Bucket: Giving', 'Bucket: Toys', 'Bucket: Car', 'Bucket: Emergency Fund'];
+
+function isBucketCategory(cat) {
+  return typeof cat === 'string' && cat.indexOf('Bucket:') === 0;
+}
 
 const CAT_COLOR = {
   Groceries: '#3ddc84', Dining: '#fb923c', Gas: '#ffd166', Transport: '#4facfe',
@@ -871,7 +991,12 @@ const CAT_COLOR = {
   Income: '#86efac', Investment: '#fbbf24', Transfer: '#cbd5e1',
   'ATM/Cash': '#fcd34d', Gifts: '#f9a8d4', Charity: '#fda4af',
   'Misc Expenses': '#a1a1aa', General: '#67e8f9', Reimbursement: '#86efac',
-  Refund: '#86efac', Other: '#6b7280'
+  Refund: '#86efac', Other: '#6b7280',
+  // Bucket categories — distinct teal/cyan family
+  'Bucket: Giving': '#5eead4',
+  'Bucket: Toys': '#7dd3fc',
+  'Bucket: Car': '#a5b4fc',
+  'Bucket: Emergency Fund': '#67e8f9'
 };
 
 // ─── CSV Parser ─────────────────────────────────────────────────────────────
@@ -925,8 +1050,12 @@ async function loadData() {
           subcategory: t.subcategory || '',
           account: t.account,
           notes: t.notes || '',
+          splitParent: t.splitparent || '',
           isDebit: (t.type || '').toLowerCase() === 'debit'
-        })).filter(t => t.amount > 0);
+        }))
+          // Exclude split-parent rows (the original $X — children replace it)
+          .filter(t => t.splitParent !== 'SPLIT')
+          .filter(t => t.amount > 0);
       }
     }
 
@@ -963,9 +1092,11 @@ async function loadData() {
             subcategory: obj.Subcategory || '',
             account: obj.Account,
             notes: obj.Notes || '',
+            splitParent: obj.SplitParent || '',
             isDebit: (obj.Type || '').toLowerCase() === 'debit'
           };
         })
+        .filter(t => t.splitParent !== 'SPLIT')
         .filter(t => t.amount > 0);
     }
 
@@ -1415,17 +1546,22 @@ function renderTransactionList() {
 
     html += filtered.map(tx => {
       const isTransfer = tx.category === 'Transfer';
+      const isBucket = isBucketCategory(tx.category);
       const itemName = tx.item || tx.merchant || 'Unknown';
       const showMerchantSecondary = tx.item && tx.item !== tx.merchant;
-      const amountClass = isTransfer ? 'transfer' : (tx.isDebit ? 'debit' : 'credit');
-      const amountPrefix = isTransfer ? '⇄ ' : (tx.isDebit ? '−' : '+');
+      let amountClass = 'debit';
+      let amountPrefix = '−';
+      if (isTransfer) { amountClass = 'transfer'; amountPrefix = '⇄ '; }
+      else if (isBucket) { amountClass = 'transfer'; amountPrefix = '🪣 '; }
+      else if (!tx.isDebit) { amountClass = 'credit'; amountPrefix = '+'; }
       const isRecurring = recurringSet.has((tx.merchant || '').toLowerCase().trim());
+      const isSplit = tx.splitParent && tx.splitParent !== 'SPLIT' && tx.splitParent !== '';
       return `
         <div class="tx-row" onclick="openEditModal(${tx.rowIndex || 0})">
           <div class="tx-left">
             <span class="cat-dot" style="background:${CAT_COLOR[tx.category] || '#6b7280'}"></span>
             <div class="tx-info">
-              <div class="tx-name">${itemName}${tx.subcategory ? '<span class="tx-subcat">' + tx.subcategory + '</span>' : ''}${isRecurring ? '<span class="recurring-badge">Recurring</span>' : ''}</div>
+              <div class="tx-name">${itemName}${tx.subcategory ? '<span class="tx-subcat">' + tx.subcategory + '</span>' : ''}${isRecurring ? '<span class="recurring-badge">Recurring</span>' : ''}${isSplit ? '<span class="split-indicator">Split</span>' : ''}</div>
               <div class="tx-meta">${tx.category} · ${fmtDate(tx.date)}${showMerchantSecondary ? ' · ' + tx.merchant : ''}</div>
             </div>
           </div>
@@ -1614,6 +1750,153 @@ function renderInvestments() {
   }
 
   root.innerHTML = html;
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+//  SPLIT TRANSACTION MODAL
+// ════════════════════════════════════════════════════════════════════
+
+let splitState = { rowIndex: null, total: 0, splits: [], originalCategory: '' };
+
+function openSplitModal(rowIndex) {
+  const tx = everyTransaction.find(t => t.rowIndex === rowIndex);
+  if (!tx) { showToast('Transaction not found', 'error'); return; }
+
+  // Initialize with two splits: half/half between original category and a bucket
+  splitState = {
+    rowIndex: rowIndex,
+    total: tx.amount,
+    originalCategory: tx.category,
+    originalMerchant: tx.merchant,
+    splits: [
+      { amount: (tx.amount / 2).toFixed(2), category: tx.category },
+      { amount: (tx.amount / 2).toFixed(2), category: 'Bucket: Toys' }
+    ]
+  };
+
+  renderSplitModal();
+}
+
+function renderSplitModal() {
+  const root = document.getElementById('modalRoot');
+  const uniqueCats = MODAL_CATEGORIES;
+
+  const total = splitState.total;
+  const allocated = splitState.splits.reduce((s, sp) => s + (parseFloat(sp.amount) || 0), 0);
+  const remaining = total - allocated;
+  const matched = Math.abs(remaining) < 0.01;
+
+  root.innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeSplitModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">Split Transaction</div>
+          <button class="modal-close" onclick="closeSplitModal()">×</button>
+        </div>
+
+        <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">
+          Splitting <span style="color:#fff;font-weight:700">${fmtMoney(total)}</span> from
+          <span style="color:#fff">${splitState.originalMerchant || 'transaction'}</span>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Allocations</div>
+          <div id="split-rows">
+            ${splitState.splits.map((sp, i) => `
+              <div class="split-row">
+                <input class="amount-input" type="number" step="0.01" value="${sp.amount}" oninput="updateSplit(${i}, 'amount', this.value)">
+                <select onchange="updateSplit(${i}, 'category', this.value)">
+                  ${uniqueCats.map(c => `<option value="${c}" ${sp.category === c ? 'selected' : ''}>${isBucketCategory(c) ? '🪣 ' + c.replace('Bucket: ', '') : c}</option>`).join('')}
+                </select>
+                ${splitState.splits.length > 2 ? '<button class="remove-split" onclick="removeSplit(' + i + ')">×</button>' : ''}
+              </div>
+            `).join('')}
+          </div>
+          <button class="split-add-btn" onclick="addSplit()">+ Add another split</button>
+        </div>
+
+        <div class="split-summary">
+          <div class="split-summary-row">
+            <span>Allocated</span>
+            <span>${fmtMoney(allocated)}</span>
+          </div>
+          <div class="split-summary-row">
+            <span>Remaining</span>
+            <span class="${matched ? 'ok' : 'mismatch'}">${matched ? '✓ ' : ''}${fmtMoney(Math.abs(remaining))}${remaining < -0.01 ? ' over' : ''}</span>
+          </div>
+          <div class="split-summary-row">
+            <span>Total</span>
+            <span>${fmtMoney(total)}</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-btn ghost" onclick="closeSplitModal()">Cancel</button>
+          <button class="modal-btn primary" onclick="saveSplit()" ${matched ? '' : 'disabled style="opacity:0.4"'}>Save Split</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function updateSplit(i, field, value) {
+  if (field === 'amount') splitState.splits[i].amount = value;
+  if (field === 'category') splitState.splits[i].category = value;
+  renderSplitModal();
+}
+
+function addSplit() {
+  splitState.splits.push({ amount: '0.00', category: 'Other' });
+  renderSplitModal();
+}
+
+function removeSplit(i) {
+  splitState.splits.splice(i, 1);
+  renderSplitModal();
+}
+
+function closeSplitModal() {
+  splitState = { rowIndex: null, total: 0, splits: [], originalCategory: '' };
+  closeModal();
+}
+
+async function saveSplit() {
+  const total = splitState.total;
+  const allocated = splitState.splits.reduce((s, sp) => s + (parseFloat(sp.amount) || 0), 0);
+  if (Math.abs(total - allocated) > 0.01) {
+    showToast('Splits must equal the total', 'error');
+    return;
+  }
+  if (splitState.splits.length < 2) {
+    showToast('Need at least 2 splits', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'split',
+        rowIndex: splitState.rowIndex,
+        splits: splitState.splits.map(s => ({
+          amount: parseFloat(s.amount),
+          category: s.category
+        }))
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('Split saved ✓', 'success');
+      closeSplitModal();
+      loadData();
+    } else {
+      showToast('Error: ' + (data.error || 'unknown'), 'error');
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -1982,7 +2265,12 @@ const MODAL_CATEGORIES = [
   'Groceries','Dining','Gas','Transport','Shopping','Subscriptions',
   'Utilities','Health','Entertainment','Travel','Income','Investment',
   'Transfer','ATM/Cash','Gifts','Charity','Misc Expenses','General',
-  'Reimbursement','Refund','Other'
+  'Reimbursement','Refund','Other',
+  'Bucket: Giving','Bucket: Toys','Bucket: Car','Bucket: Emergency Fund'
+];
+
+const BUCKET_CATEGORIES = [
+  'Bucket: Giving','Bucket: Toys','Bucket: Car','Bucket: Emergency Fund'
 ];
 
 function closeModal() {
@@ -2065,7 +2353,7 @@ function openEditModal(rowIndex) {
 
         <div class="modal-actions">
           <button class="modal-btn danger" onclick="deleteTx(${rowIndex})">Delete</button>
-          <button class="modal-btn ghost" onclick="closeModal()">Cancel</button>
+          <button class="modal-btn ghost" onclick="openSplitModal(${rowIndex})">Split</button>
           <button class="modal-btn primary" onclick="saveEdit(${rowIndex})">Save</button>
         </div>
       </div>
