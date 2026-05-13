@@ -1841,9 +1841,51 @@ function renderSplitModal() {
 }
 
 function updateSplit(i, field, value) {
-  if (field === 'amount') splitState.splits[i].amount = value;
-  if (field === 'category') splitState.splits[i].category = value;
-  renderSplitModal();
+  if (field === 'amount') {
+    splitState.splits[i].amount = value;
+    // Update only the summary numbers, not the whole modal — keeps focus in input
+    refreshSplitSummary();
+  } else if (field === 'category') {
+    splitState.splits[i].category = value;
+    refreshSplitSummary();
+  }
+}
+
+function refreshSplitSummary() {
+  const total = splitState.total;
+  const allocated = splitState.splits.reduce((s, sp) => s + (parseFloat(sp.amount) || 0), 0);
+  const remaining = total - allocated;
+  const matched = Math.abs(remaining) < 0.01;
+
+  const summary = document.querySelector('.split-summary');
+  if (summary) {
+    summary.innerHTML = `
+      <div class="split-summary-row">
+        <span>Allocated</span>
+        <span>${fmtMoney(allocated)}</span>
+      </div>
+      <div class="split-summary-row">
+        <span>Remaining</span>
+        <span class="${matched ? 'ok' : 'mismatch'}">${matched ? '✓ ' : ''}${fmtMoney(Math.abs(remaining))}${remaining < -0.01 ? ' over' : ''}</span>
+      </div>
+      <div class="split-summary-row">
+        <span>Total</span>
+        <span>${fmtMoney(total)}</span>
+      </div>
+    `;
+  }
+
+  // Enable/disable save button without full re-render
+  const saveBtn = document.querySelector('.modal-actions .modal-btn.primary');
+  if (saveBtn) {
+    if (matched) {
+      saveBtn.removeAttribute('disabled');
+      saveBtn.style.opacity = '1';
+    } else {
+      saveBtn.setAttribute('disabled', 'true');
+      saveBtn.style.opacity = '0.4';
+    }
+  }
 }
 
 function addSplit() {
