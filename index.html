@@ -201,6 +201,7 @@
   }
   .tx-amount.debit { color: var(--red); }
   .tx-amount.credit { color: var(--green); }
+  .tx-amount.transfer { color: var(--muted); font-weight: 500; }
 
   /* Range tabs (Week / Month / Year) */
   .range-tabs {
@@ -257,6 +258,130 @@
     color: var(--muted); letter-spacing: 0.18em;
     margin-bottom: 2px;
   }
+
+  /* Velocity / forecast card */
+  .velocity-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .velocity-text {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .velocity-text .v-num {
+    font-weight: 700;
+    color: #fff;
+  }
+  .velocity-text .v-status {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .velocity-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .velocity-card.warn { border-color: rgba(255,209,102,0.35); }
+  .velocity-card.over { border-color: rgba(255,107,107,0.35); }
+
+  /* Net card on dashboard */
+  .net-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .net-card .net-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .net-card .net-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .net-card .net-value {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .net-card .net-value.positive { color: var(--green); }
+  .net-card .net-value.negative { color: var(--red); }
+
+  /* Recurring badge */
+  .recurring-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: rgba(167,139,250,0.15);
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #a78bfa;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  /* Search bar */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 12px;
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+  .search-bar input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 0;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    -webkit-appearance: none;
+  }
+  .search-bar input:focus { outline: none; }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-bar .search-icon {
+    color: var(--muted);
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .search-bar .clear-search {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    -webkit-tap-highlight-color: transparent;
+    display: none;
+  }
+  .search-bar .clear-search.visible { display: block; }
 
   /* Filters */
   .filter-section {
@@ -529,6 +654,146 @@
   .balance-date { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 3px; }
   .balance-amount { font-family: var(--mono); font-size: 16px; font-weight: 700; color: #fff; }
 
+  /* Wishlist */
+  .wishlist-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .wishlist-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .wishlist-summary-row:last-of-type { margin-bottom: 0; }
+  .ws-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .ws-value {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .ws-value.big { font-size: 22px; }
+  .ws-value.green { color: var(--green); }
+  .ws-value.red { color: var(--red); }
+  .ws-value.yellow { color: var(--yellow); }
+
+  .wishlist-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .wishlist-action-btn {
+    flex: 1;
+    padding: 11px 14px;
+    background: rgba(79,172,254,0.1);
+    border: 1px solid rgba(79,172,254,0.3);
+    color: var(--blue);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 7px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wishlist-action-btn:active { opacity: 0.7; }
+
+  .wish-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s;
+  }
+  .wish-item:last-child { border-bottom: none; }
+  .wish-item:active { background: rgba(255,255,255,0.02); }
+  .wish-item.over-budget .wish-cost { color: var(--red); opacity: 0.6; }
+
+  .wish-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-weight: 700;
+    font-size: 13px;
+    color: transparent;
+  }
+  .wish-item.selected .wish-checkbox {
+    border-color: var(--blue);
+    background: var(--blue);
+    color: #000;
+  }
+  .wish-item.selected .wish-checkbox::after { content: '✓'; }
+
+  .wish-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .wish-name {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wish-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .wish-priority {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    padding: 2px 6px;
+    height: 16px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: #000;
+    line-height: 1;
+  }
+  .wish-priority.p1 { background: var(--red); }
+  .wish-priority.p2 { background: var(--yellow); }
+  .wish-priority.p3 { background: var(--blue); }
+
+  .wish-cost {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Toast */
   .toast {
     position: fixed; left: 50%; bottom: 100px;
     transform: translateX(-50%);
@@ -574,9 +839,11 @@
 <script>
 // === CONFIG ===
 // Paste your Apps Script Web App URL here after deploying:
-const WORKER_URL = 'https://script.google.com/macros/s/AKfycbxVNo4Kt7zn2etl9SmoAwC4L9h9bWSkQLEX9E_A9ohbvz7NdmGoXEvwMmDBFObpzqF9/exec';
+const WORKER_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 // Filter state — persists across renders
+let searchQuery = '';
+
 let activeFilters = {
   type: 'all',     // all | spending | income | refunds
   category: null,  // null = all
@@ -650,6 +917,7 @@ async function loadData() {
         transactions = (data.transactions || []).map(t => ({
           rowIndex: t.rowIndex,
           date: t.date,
+          item: t.item || '',
           merchant: t.merchant,
           amount: parseFloat(t.amount) || 0,
           type: t.type,
@@ -687,6 +955,7 @@ async function loadData() {
           return {
             rowIndex: idx + 2,
             date: obj.Date,
+            item: obj.Item || '',
             merchant: obj.Merchant,
             amount: parseFloat(obj.Amount) || 0,
             type: obj.Type,
@@ -738,8 +1007,102 @@ async function loadData() {
 
 // ─── Rendering ──────────────────────────────────────────────────────────────
 
+// Detect recurring merchants: appears in 2+ different months at similar amounts
+function detectRecurring(allTx) {
+  const groups = {};
+  allTx.forEach(t => {
+    if (!t.isDebit || !t.merchant) return;
+    const key = (t.merchant || '').toLowerCase().trim();
+    if (!key) return;
+    const d = new Date(t.date);
+    if (isNaN(d)) return;
+    const monthKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    if (!groups[key]) groups[key] = { merchant: t.merchant, months: new Set(), amounts: [] };
+    groups[key].months.add(monthKey);
+    groups[key].amounts.push(t.amount);
+  });
+
+  const recurring = new Set();
+  Object.entries(groups).forEach(([key, info]) => {
+    if (info.months.size < 2) return;
+    // Check amounts are similar (within 15% of mean)
+    const mean = info.amounts.reduce((s, a) => s + a, 0) / info.amounts.length;
+    const allClose = info.amounts.every(a => Math.abs(a - mean) / mean < 0.15);
+    if (allClose) recurring.add(key);
+  });
+  return recurring;
+}
+
 function fmtMoney(n) {
   return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function buildVelocityCard(v, netSpent, budget) {
+  const dailyAvg = netSpent / v.daysElapsed;
+  const projected = dailyAvg * v.daysInMonth;
+  const remainingBudget = budget - netSpent;
+  const remainingDays = v.daysRemaining;
+
+  let status, icon, cardClass;
+  if (projected > budget * 1.05) {
+    status = `Over pace · projected ${fmtMoney(projected)}`;
+    icon = '⚠';
+    cardClass = 'over';
+  } else if (projected > budget * 0.85) {
+    status = `On pace · projected ${fmtMoney(projected)}`;
+    icon = '◐';
+    cardClass = 'warn';
+  } else {
+    status = `Under pace · projected ${fmtMoney(projected)}`;
+    icon = '✓';
+    cardClass = '';
+  }
+
+  const dailyAllowance = remainingDays > 0 ? remainingBudget / remainingDays : 0;
+  const headline = remainingDays > 0
+    ? `<span class="v-num">${fmtMoney(dailyAvg)}</span>/day · ${remainingDays} days left at <span class="v-num">${fmtMoney(dailyAllowance)}</span>/day`
+    : `<span class="v-num">${fmtMoney(dailyAvg)}</span>/day · month ended`;
+
+  return `
+    <div class="velocity-card ${cardClass}">
+      <div class="velocity-text">
+        ${headline}
+        <span class="v-status">${status}</span>
+      </div>
+      <div class="velocity-icon">${icon}</div>
+    </div>
+  `;
+}
+
+function buildNetCard(monthTx) {
+  // Real income (paychecks etc.), NOT reimbursements or transfers
+  const realIncome = monthTx
+    .filter(t => !t.isDebit && t.category === 'Income')
+    .reduce((s, t) => s + t.amount, 0);
+
+  const realSpend = monthTx
+    .filter(t => t.isDebit && !NON_SPENDING_CATEGORIES.includes(t.category))
+    .reduce((s, t) => s + t.amount, 0);
+
+  if (realIncome === 0 && realSpend === 0) return '';
+
+  const net = realIncome - realSpend;
+  const positive = net >= 0;
+  const subLabel = realIncome > 0
+    ? `${fmtMoney(realIncome)} in · ${fmtMoney(realSpend)} out`
+    : `${fmtMoney(realSpend)} out · no income logged yet`;
+
+  return `
+    <div class="net-card">
+      <div>
+        <div class="net-label">${positive ? 'Net Saved' : 'Net Spent'}</div>
+        <div class="net-sub">${subLabel}</div>
+      </div>
+      <div class="net-value ${positive ? 'positive' : 'negative'}">
+        ${positive ? '+' : '−'}${fmtMoney(Math.abs(net))}
+      </div>
+    </div>
+  `;
 }
 
 function fmtDate(d) {
@@ -798,6 +1161,20 @@ function render(transactions) {
     rangeSubLabel = (activeMonth === currentMonthKey) ? 'Current month' : 'Viewing';
     scaleFactor = 1;
   }
+
+  // Velocity metrics (only meaningful for the current month)
+  const isCurrentMonthView = (timeRange === 'month' && activeMonth === currentMonthKey);
+  let velocity = null;
+  if (isCurrentMonthView) {
+    const daysInMonth = new Date(yr, mo, 0).getDate();
+    const dayOfMonth = now.getDate();
+    const daysElapsed = Math.max(1, dayOfMonth);
+    const daysRemaining = Math.max(0, daysInMonth - dayOfMonth);
+    velocity = { daysInMonth, daysElapsed, daysRemaining };
+  }
+
+  // Recurring detection — run on ALL transactions, not just this month
+  const recurringSet = detectRecurring(transactions);
 
   const monthTx = transactions.filter(t => {
     const d = new Date(t.date);
@@ -888,6 +1265,9 @@ function render(transactions) {
       </div>
     </div>
 
+    ${velocity ? buildVelocityCard(velocity, netSpent, effectiveBudget) : ''}
+    ${buildNetCard(monthTx)}
+
   `;
 
   if (Object.keys(byCategory).length > 0) {
@@ -949,6 +1329,16 @@ function renderTransactionList() {
     filtered = filtered.filter(t => t.account === activeFilters.account);
   }
 
+  if (searchQuery && searchQuery.trim()) {
+    const q = searchQuery.toLowerCase().trim();
+    filtered = filtered.filter(t => {
+      return (t.merchant || '').toLowerCase().includes(q)
+        || (t.item || '').toLowerCase().includes(q)
+        || (t.subcategory || '').toLowerCase().includes(q)
+        || (t.notes || '').toLowerCase().includes(q);
+    });
+  }
+
   filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   // Build category/account counts from full list for chips
@@ -970,6 +1360,12 @@ function renderTransactionList() {
 
   let html = `
     <div class="card-label">Transactions</div>
+
+    <div class="search-bar">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="searchInput" placeholder="Search merchant or item..." value="${searchQuery.replace(/"/g, '&quot;')}" oninput="updateSearch(this.value)">
+      <button class="clear-search ${searchQuery ? 'visible' : ''}" onclick="updateSearch('')">×</button>
+    </div>
 
     <div class="filter-section">
       <div class="filter-tabs">
@@ -1014,23 +1410,48 @@ function renderTransactionList() {
   if (filtered.length === 0) {
     html += `<div class="empty" style="padding:24px 12px;font-size:12px"><div class="big" style="font-size:24px">∅</div>No matches for these filters</div>`;
   } else {
-    html += filtered.map(tx => `
-      <div class="tx-row" onclick="openEditModal(${tx.rowIndex || 0})">
-        <div class="tx-left">
-          <span class="cat-dot" style="background:${CAT_COLOR[tx.category] || '#6b7280'}"></span>
-          <div class="tx-info">
-            <div class="tx-name">${tx.merchant || 'Unknown'}${tx.subcategory ? '<span class="tx-subcat">' + tx.subcategory + '</span>' : ''}</div>
-            <div class="tx-meta">${tx.category} · ${fmtDate(tx.date)}${tx.account ? ' · ' + tx.account : ''}</div>
+    // Recurring detection set (computed once per render call)
+    const recurringSet = detectRecurring(everyTransaction);
+
+    html += filtered.map(tx => {
+      const isTransfer = tx.category === 'Transfer';
+      const itemName = tx.item || tx.merchant || 'Unknown';
+      const showMerchantSecondary = tx.item && tx.item !== tx.merchant;
+      const amountClass = isTransfer ? 'transfer' : (tx.isDebit ? 'debit' : 'credit');
+      const amountPrefix = isTransfer ? '⇄ ' : (tx.isDebit ? '−' : '+');
+      const isRecurring = recurringSet.has((tx.merchant || '').toLowerCase().trim());
+      return `
+        <div class="tx-row" onclick="openEditModal(${tx.rowIndex || 0})">
+          <div class="tx-left">
+            <span class="cat-dot" style="background:${CAT_COLOR[tx.category] || '#6b7280'}"></span>
+            <div class="tx-info">
+              <div class="tx-name">${itemName}${tx.subcategory ? '<span class="tx-subcat">' + tx.subcategory + '</span>' : ''}${isRecurring ? '<span class="recurring-badge">Recurring</span>' : ''}</div>
+              <div class="tx-meta">${tx.category} · ${fmtDate(tx.date)}${showMerchantSecondary ? ' · ' + tx.merchant : ''}</div>
+            </div>
           </div>
+          <span class="tx-amount ${amountClass}">
+            ${amountPrefix}${fmtMoney(tx.amount)}
+          </span>
         </div>
-        <span class="tx-amount ${tx.isDebit ? 'debit' : 'credit'}">
-          ${tx.isDebit ? '−' : '+'}${fmtMoney(tx.amount)}
-        </span>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   return html;
+}
+
+function updateSearch(value) {
+  searchQuery = value;
+  const card = document.getElementById('txCard');
+  if (card) card.innerHTML = renderTransactionList();
+  // Re-focus input after re-render
+  setTimeout(() => {
+    const input = document.getElementById('searchInput');
+    if (input && document.activeElement !== input && value) {
+      input.focus();
+      input.setSelectionRange(value.length, value.length);
+    }
+  }, 0);
 }
 
 function setFilter(key, value) {
@@ -1294,8 +1715,8 @@ function renderWishlist() {
 
     // Edit link
     html += `
-      <div style="margin-top:12px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
-        Long-press an item to edit · or tap a row to select for budget combos
+      <div style="margin-top:14px;padding:0 80px 0 8px;text-align:left;font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--muted)">
+        Long-press to edit · Tap to select
       </div>
     `;
   }
@@ -1593,13 +2014,31 @@ function openEditModal(rowIndex) {
         </div>
 
         <div class="modal-section">
-          <div class="modal-label">Merchant</div>
+          <div class="modal-label">Item name (what was bought)</div>
+          <input class="modal-input" id="ed-item" value="${(tx.item||'').replace(/"/g,'&quot;')}" placeholder="${(tx.merchant||'').replace(/"/g,'&quot;') || 'e.g. Gas, Running shoes'}">
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)">Leave blank to use merchant as display name</div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Merchant (where the charge came from)</div>
           <input class="modal-input" id="ed-merchant" value="${(tx.merchant||'').replace(/"/g,'&quot;')}">
         </div>
 
         <div class="modal-section">
           <div class="modal-label">Amount</div>
           <input class="modal-input" id="ed-amount" type="number" step="0.01" value="${tx.amount}">
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-label">Direction</div>
+          <div id="ed-type-row" style="display:flex;gap:6px">
+            <button class="modal-cat-btn ${tx.isDebit?'selected':''}" data-type="debit" onclick="selectModalType(this)" style="flex:1;justify-content:center">
+              <span style="color:var(--red);font-weight:700">−</span> Expense
+            </button>
+            <button class="modal-cat-btn ${!tx.isDebit?'selected':''}" data-type="credit" onclick="selectModalType(this)" style="flex:1;justify-content:center">
+              <span style="color:var(--green);font-weight:700">+</span> Income
+            </button>
+          </div>
         </div>
 
         <div class="modal-section">
@@ -1634,18 +2073,26 @@ function openEditModal(rowIndex) {
   `;
 }
 
+function selectModalType(btn) {
+  document.querySelectorAll('#ed-type-row .modal-cat-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
 function selectModalCat(btn) {
   btn.parentElement.querySelectorAll('.modal-cat-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 }
 
 async function saveEdit(rowIndex) {
+  const item = document.getElementById('ed-item').value.trim();
   const merchant = document.getElementById('ed-merchant').value.trim();
   const amount = parseFloat(document.getElementById('ed-amount').value);
   const subcat = document.getElementById('ed-subcat').value.trim();
   const notes = document.getElementById('ed-notes').value.trim();
   const selectedCat = document.querySelector('#ed-cat-grid .modal-cat-btn.selected');
   const category = selectedCat ? selectedCat.dataset.cat : null;
+  const selectedType = document.querySelector('#ed-type-row .modal-cat-btn.selected');
+  const type = selectedType ? selectedType.dataset.type : null;
 
   if (!WORKER_URL || WORKER_URL.indexOf('PASTE') === 0) {
     showToast('Worker URL not configured', 'error');
@@ -1653,13 +2100,15 @@ async function saveEdit(rowIndex) {
   }
 
   try {
+    const updates = { Item: item, Merchant: merchant, Amount: amount, Category: category, Subcategory: subcat, Notes: notes };
+    if (type) updates.Type = type;
     const res = await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'edit',
         rowIndex: rowIndex,
-        updates: { Merchant: merchant, Amount: amount, Category: category, Subcategory: subcat, Notes: notes }
+        updates: updates
       })
     });
     const data = await res.json();
@@ -1721,6 +2170,11 @@ function openAddModal() {
         </div>
 
         <div class="modal-section">
+          <div class="modal-label">Item name (optional)</div>
+          <input class="modal-input" id="add-item" placeholder="e.g. Gas, Birthday gift">
+        </div>
+
+        <div class="modal-section">
           <div class="modal-label">Merchant</div>
           <input class="modal-input" id="add-merchant" placeholder="e.g. Costco">
         </div>
@@ -1771,6 +2225,7 @@ function openAddModal() {
 
 async function saveAdd() {
   const date = document.getElementById('add-date').value;
+  const item = document.getElementById('add-item').value.trim();
   const merchant = document.getElementById('add-merchant').value.trim();
   const amount = parseFloat(document.getElementById('add-amount').value);
   const type = document.getElementById('add-type').value;
@@ -1790,7 +2245,7 @@ async function saveAdd() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'add',
-        transaction: { date, merchant, amount, type, category, subcategory: subcat, account }
+        transaction: { date, item, merchant, amount, type, category, subcategory: subcat, account }
       })
     });
     const data = await res.json();
