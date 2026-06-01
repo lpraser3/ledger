@@ -978,7 +978,7 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSj7h-tIurn29
 
 const BUDGET_LIMIT = 950; // edit this to your monthly limit
 const NON_SPENDING_CATEGORIES = ['Transfer', 'Investment', 'Gifts', 'Charity', 'Refund', 'Reimbursement', 'Income',
-  'Bucket: Giving', 'Bucket: Toys', 'Bucket: Car', 'Bucket: Emergency Fund'];
+  'Bucket: Giving', 'Bucket: Toys', 'Bucket: Car', 'Bucket: Emergency Fund', 'Bucket: Travel'];
 
 function isBucketCategory(cat) {
   return typeof cat === 'string' && cat.indexOf('Bucket:') === 0;
@@ -996,7 +996,8 @@ const CAT_COLOR = {
   'Bucket: Giving': '#5eead4',
   'Bucket: Toys': '#7dd3fc',
   'Bucket: Car': '#a5b4fc',
-  'Bucket: Emergency Fund': '#67e8f9'
+  'Bucket: Emergency Fund': '#67e8f9',
+  'Bucket: Travel': '#2dd4bf'
 };
 
 // ─── CSV Parser ─────────────────────────────────────────────────────────────
@@ -2308,11 +2309,11 @@ const MODAL_CATEGORIES = [
   'Utilities','Health','Entertainment','Travel','Income','Investment',
   'Transfer','ATM/Cash','Gifts','Charity','Misc Expenses','General',
   'Reimbursement','Refund','Other',
-  'Bucket: Giving','Bucket: Toys','Bucket: Car','Bucket: Emergency Fund'
+  'Bucket: Giving','Bucket: Toys','Bucket: Car','Bucket: Emergency Fund','Bucket: Travel'
 ];
 
 const BUCKET_CATEGORIES = [
-  'Bucket: Giving','Bucket: Toys','Bucket: Car','Bucket: Emergency Fund'
+  'Bucket: Giving','Bucket: Toys','Bucket: Car','Bucket: Emergency Fund','Bucket: Travel'
 ];
 
 function closeModal() {
