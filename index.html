@@ -202,6 +202,7 @@
   .tx-amount.debit { color: var(--red); }
   .tx-amount.credit { color: var(--green); }
   .tx-amount.transfer { color: var(--muted); font-weight: 500; }
+  .tx-amount.investment { color: var(--muted); font-weight: 500; }
 
   /* Range tabs (Week / Month / Year) */
   .range-tabs {
@@ -1547,6 +1548,7 @@ function renderTransactionList() {
 
     html += filtered.map(tx => {
       const isTransfer = tx.category === 'Transfer';
+      const isInvestment = tx.category === 'Investment';
       const isBucket = isBucketCategory(tx.category);
       const itemName = tx.item || tx.merchant || 'Unknown';
       const showMerchantSecondary = tx.item && tx.item !== tx.merchant;
@@ -1554,7 +1556,7 @@ function renderTransactionList() {
       let amountPrefix = '−';
       if (isTransfer) { amountClass = 'transfer'; amountPrefix = '⇄ '; }
       else if (isBucket) { amountClass = 'transfer'; amountPrefix = '🪣 '; }
-      else if (!tx.isDebit) { amountClass = 'credit'; amountPrefix = '+'; }
+      else if (isInvestment) { amountClass = 'investment'; } else if (!tx.isDebit) { amountClass = 'credit'; amountPrefix = '+'; }
       const isRecurring = recurringSet.has((tx.merchant || '').toLowerCase().trim());
       const isSplit = tx.splitParent && tx.splitParent !== 'SPLIT' && tx.splitParent !== '';
       return `
@@ -1562,7 +1564,7 @@ function renderTransactionList() {
           <div class="tx-left">
             <span class="cat-dot" style="background:${CAT_COLOR[tx.category] || '#6b7280'}"></span>
             <div class="tx-info">
-              <div class="tx-name">${itemName}${tx.subcategory ? '<span class="tx-subcat">' + tx.subcategory + '</span>' : ''}${isRecurring ? '<span class="recurring-badge">Recurring</span>' : ''}${isSplit ? '<span class="split-indicator">Split</span>' : ''}</div>
+              <div class="tx-name">${itemName}${tx.subcategory && tx.subcategory !== itemName ? '<span class="tx-subcat">' + tx.subcategory + '</span>' : ''}${isRecurring ? '<span class="recurring-badge">Recurring</span>' : ''}${isSplit ? '<span class="split-indicator">Split</span>' : ''}</div>
               <div class="tx-meta">${tx.category} · ${fmtDate(tx.date)}${showMerchantSecondary ? ' · ' + tx.merchant : ''}</div>
             </div>
           </div>
