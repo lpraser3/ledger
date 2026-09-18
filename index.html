@@ -1043,7 +1043,7 @@ function mapWishlist(items) {
 // already covered, with daily history, via mapPortfolio.
 function mapLiveAccounts(accounts) {
   return (accounts || [])
-    .filter(a => a.type !== 'investment')
+    .filter(a => a.type === 'depository' || a.type === 'credit')
     .map(a => ({
       account: [a.org, a.name].filter(Boolean).join(' '),
       balance: Number(a.balance) || 0,
