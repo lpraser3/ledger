@@ -954,8 +954,88 @@
 
 <script>
 // === CONFIG ===
-// Paste your Apps Script Web App URL here after deploying:
-const WORKER_URL = 'https://script.google.com/macros/s/AKfycbxVNo4Kt7zn2etl9SmoAwC4L9h9bWSkQLEX9E_A9ohbvz7NdmGoXEvwMmDBFObpzqF9/exec';
+// Your ledger-api container's address (Jarvis's local IP + the port
+// mapped in docker-compose.jarvis.yml) and the shared secret set as
+// API_SHARED_SECRET in Portainer.
+const API_URL = 'http://10.0.0.214:8080';
+const API_KEY = '89c9ec064d94413bafb8e4e784eeb08dfdd2a4e9077bef0b8c8b42df89a20bfa';
+const CACHE_KEY = 'ledger_cache_v1';
+
+async function apiFetch(path, opts = {}) {
+  const headers = Object.assign(
+    { 'Content-Type': 'application/json', 'X-Api-Key': API_KEY },
+    opts.headers || {}
+  );
+  const res = await fetch(API_URL + path, Object.assign({}, opts, { headers }));
+  if (!res.ok) {
+    let msg = 'HTTP ' + res.status;
+    try { const j = await res.json(); if (j.error) msg = j.error; } catch (e) { /* ignore */ }
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+function getCache() {
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch (e) { return null; }
+}
+function setCache(payload) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch (e) { /* storage full/unavailable — fine, just skip caching */ }
+}
+
+// Adapts the API's row shape to the field names the rest of this file
+// already expects (rowIndex as the id, lowercase field names, etc.) —
+// keeps everything below untouched.
+function mapTransactions(raw) {
+  return (raw || []).map(t => ({
+    rowIndex: t.id,
+    date: t.date,
+    item: t.item || '',
+    merchant: t.merchant,
+    amount: parseFloat(t.amount) || 0,
+    type: t.type,
+    category: t.category || 'Other',
+    subcategory: t.subcategory || '',
+    account: [t.account_org, t.account_name].filter(Boolean).join(' '),
+    notes: t.notes || '',
+    splitParent: t.split_parent ? String(t.split_parent) : '',
+    isDebit: (t.type || '').toLowerCase() === 'debit'
+  })).filter(t => t.amount > 0);
+}
+
+// Investment balance snapshots come back per-account, per-date from the
+// API; this reshapes them into the { account, date, totalvalue, daychange }
+// rows the investments/net-worth views expect, computing day change
+// client-side from the two most recent snapshots per account.
+function mapPortfolio(snapshots) {
+  const byAccount = {};
+  (snapshots || []).forEach(s => {
+    const key = [s.org, s.name].filter(Boolean).join(' ') || 'Investment';
+    (byAccount[key] = byAccount[key] || []).push(s);
+  });
+  const mapped = [];
+  Object.entries(byAccount).forEach(([account, list]) => {
+    list.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const daychange = list.length > 1 ? Number(list[0].balance) - Number(list[1].balance) : 0;
+    list.forEach((s, i) => mapped.push({
+      account,
+      date: s.date,
+      totalvalue: Number(s.balance) || 0,
+      daychange: i === 0 ? daychange : 0
+    }));
+  });
+  return mapped;
+}
+
+function mapWishlist(items) {
+  return (items || []).map(w => ({
+    rowIndex: w.id,
+    item: w.item,
+    cost: Number(w.cost) || 0,
+    priority: Number(w.priority) || 2,
+    notes: w.notes || '',
+    purchased: !!w.purchased
+  }));
+}
 
 // Filter state — persists across renders
 let searchQuery = '';
@@ -974,8 +1054,6 @@ let portfolioSnapshots = [];
 let manualBalances = [];
 let wishlistItems = [];
 let selectedWishIds = new Set();
-
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSj7h-tIurn29eq-KVDeZ9W0jRWbXXNkuyJSNfUSntpj4bM2W7FLtGi3vOM5SMVjHNuiuvHJ0h2WWF-/pub?gid=0&single=true&output=csv';
 
 const BUDGET_LIMIT = 950; // edit this to your monthly limit
 const NON_SPENDING_CATEGORIES = ['Transfer', 'Investment', 'Gifts', 'Charity', 'Refund', 'Reimbursement', 'Income',
@@ -1001,136 +1079,55 @@ const CAT_COLOR = {
   'Bucket: Travel': '#2dd4bf'
 };
 
-// ─── CSV Parser ─────────────────────────────────────────────────────────────
-
-function parseCSV(text) {
-  const rows = [];
-  let row = [], cell = '', inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i], next = text[i + 1];
-    if (inQuotes) {
-      if (c === '"' && next === '"') { cell += '"'; i++; }
-      else if (c === '"') { inQuotes = false; }
-      else { cell += c; }
-    } else {
-      if (c === '"') { inQuotes = true; }
-      else if (c === ',') { row.push(cell); cell = ''; }
-      else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
-      else if (c === '\r') { /* skip */ }
-      else { cell += c; }
-    }
-  }
-  if (cell || row.length) { row.push(cell); rows.push(row); }
-  return rows;
-}
-
 // ─── Data fetch ─────────────────────────────────────────────────────────────
+
+function renderCurrentView(transactions) {
+  everyTransaction = transactions;
+  if (activeView === 'spending') render(transactions);
+  else if (activeView === 'investments') renderInvestments();
+  else if (activeView === 'networth') renderNetWorth();
+  else if (activeView === 'wishlist') renderWishlist();
+}
 
 async function loadData() {
   const dot = document.getElementById('statusDot');
   const btn = document.getElementById('refreshBtn');
+
+  // Render instantly from whatever we last cached, before touching the
+  // network — this is what makes the app feel fast on open, since it no
+  // longer waits on a live fetch just to paint the screen.
+  const cached = getCache();
+  if (cached) {
+    portfolioSnapshots = cached.portfolioSnapshots || [];
+    manualBalances = cached.manualBalances || [];
+    wishlistItems = cached.wishlistItems || [];
+    renderCurrentView(cached.transactions || []);
+  }
+
   dot.className = 'status-dot loading';
   btn.disabled = true;
   btn.textContent = '↻ ...';
 
   try {
-    let transactions = [];
+    const [txData, portData, balData, wishData] = await Promise.all([
+      apiFetch('/api/transactions'),
+      apiFetch('/api/portfolio'),
+      apiFetch('/api/balances'),
+      apiFetch('/api/wishlist')
+    ]);
 
-    // Prefer Apps Script Worker for live data (with rowIndex for edits)
-    if (WORKER_URL && WORKER_URL.indexOf('PASTE') !== 0) {
-      const res = await fetch(WORKER_URL + '?action=data&_=' + Date.now());
-      if (res.ok) {
-        const data = await res.json();
-        transactions = (data.transactions || []).map(t => ({
-          rowIndex: t.rowIndex,
-          date: t.date,
-          item: t.item || '',
-          merchant: t.merchant,
-          amount: parseFloat(t.amount) || 0,
-          type: t.type,
-          category: t.category || 'Other',
-          subcategory: t.subcategory || '',
-          account: t.account,
-          notes: t.notes || '',
-          splitParent: t.splitparent || '',
-          isDebit: (t.type || '').toLowerCase() === 'debit'
-        }))
-          // Exclude split-parent rows (the original $X — children replace it)
-          .filter(t => t.splitParent !== 'SPLIT')
-          .filter(t => t.amount > 0);
-      }
-    }
+    const transactions = mapTransactions(txData.transactions);
+    portfolioSnapshots = mapPortfolio(portData.snapshots);
+    manualBalances = balData.balances || [];
+    wishlistItems = mapWishlist(wishData.items);
 
-    // Fallback to CSV if Worker isn't configured or failed
-    if (transactions.length === 0) {
-      const url = SHEET_URL + '&_=' + Date.now();
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const csv = await res.text();
-      const rows = parseCSV(csv);
+    setCache({ transactions, portfolioSnapshots, manualBalances, wishlistItems });
 
-      if (rows.length < 2) {
-        renderEmpty();
-        dot.className = 'status-dot';
-        btn.disabled = false;
-        btn.textContent = '↻ REFRESH';
-        return;
-      }
-
-      const headers = rows[0].map(h => h.trim());
-      transactions = rows.slice(1)
-        .filter(r => r.length >= headers.length && r[0])
-        .map((r, idx) => {
-          const obj = {};
-          headers.forEach((h, i) => { obj[h] = r[i]; });
-          return {
-            rowIndex: idx + 2,
-            date: obj.Date,
-            item: obj.Item || '',
-            merchant: obj.Merchant,
-            amount: parseFloat(obj.Amount) || 0,
-            type: obj.Type,
-            category: obj.Category || 'Other',
-            subcategory: obj.Subcategory || '',
-            account: obj.Account,
-            notes: obj.Notes || '',
-            splitParent: obj.SplitParent || '',
-            isDebit: (obj.Type || '').toLowerCase() === 'debit'
-          };
-        })
-        .filter(t => t.splitParent !== 'SPLIT')
-        .filter(t => t.amount > 0);
-    }
-
-    // Also fetch portfolio + balances if Worker available
-    if (WORKER_URL && WORKER_URL.indexOf('PASTE') !== 0) {
-      try {
-        const [portRes, balRes, wishRes] = await Promise.all([
-          fetch(WORKER_URL + '?action=portfolio&_=' + Date.now()),
-          fetch(WORKER_URL + '?action=balances&_=' + Date.now()),
-          fetch(WORKER_URL + '?action=wishlist&_=' + Date.now())
-        ]);
-        if (portRes.ok) portfolioSnapshots = (await portRes.json()).snapshots || [];
-        if (balRes.ok) manualBalances = (await balRes.json()).balances || [];
-        if (wishRes.ok) wishlistItems = (await wishRes.json()).items || [];
-      } catch (e) { /* ignore */ }
-    }
-
-    if (activeView === 'spending') {
-      render(transactions);
-    } else if (activeView === 'investments') {
-      everyTransaction = transactions;
-      renderInvestments();
-    } else if (activeView === 'networth') {
-      everyTransaction = transactions;
-      renderNetWorth();
-    } else if (activeView === 'wishlist') {
-      everyTransaction = transactions;
-      renderWishlist();
-    }
+    renderCurrentView(transactions);
     dot.className = 'status-dot';
   } catch (err) {
-    renderError(err.message);
+    if (!cached) renderError(err.message);
+    else showToast('Refresh failed — showing cached data', 'error');
     dot.className = 'status-dot error';
   } finally {
     btn.disabled = false;
@@ -1666,7 +1663,7 @@ function renderInvestments() {
         <div class="empty">
           <div class="big">📊</div>
           No portfolio data yet.<br><br>
-          Run <code style="background:var(--bg);padding:2px 6px;border-radius:3px">scanFidelityPortfolio</code> in your Apps Script after Fidelity sends you a daily summary email.
+          It'll show up here after the next sync, once SimpleFIN has pulled a balance for a connected investment account.
         </div>
       </div>
     `;
@@ -1919,19 +1916,15 @@ async function saveSplit() {
   }
 
   try {
-    const res = await fetch(WORKER_URL, {
+    const data = await apiFetch('/api/transactions/' + splitState.rowIndex + '/split', {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
-        action: 'split',
-        rowIndex: splitState.rowIndex,
         splits: splitState.splits.map(s => ({
           amount: parseFloat(s.amount),
           category: s.category
         }))
       })
     });
-    const data = await res.json();
     if (data.ok) {
       showToast('Split saved ✓', 'success');
       closeSplitModal();
@@ -1940,7 +1933,7 @@ async function saveSplit() {
       showToast('Error: ' + (data.error || 'unknown'), 'error');
     }
   } catch (e) {
-    showToast('Network error', 'error');
+    showToast('Error: ' + e.message, 'error');
   }
 }
 
@@ -2166,16 +2159,9 @@ async function saveWish(rowIndex) {
   if (!item || !cost) { showToast('Need item + cost', 'error'); return; }
 
   try {
-    const body = rowIndex
-      ? { action: 'editWishlist', rowIndex, updates: { Item: item, Cost: cost, Priority: priority, Notes: notes } }
-      : { action: 'addWishlist', item, cost, priority, notes };
-
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
+    const data = rowIndex
+      ? await apiFetch('/api/wishlist/' + rowIndex, { method: 'PATCH', body: JSON.stringify({ item, cost, priority, notes }) })
+      : await apiFetch('/api/wishlist', { method: 'POST', body: JSON.stringify({ item, cost, priority, notes }) });
     if (data.ok) {
       showToast(rowIndex ? 'Saved ✓' : 'Added ✓', 'success');
       closeModal();
@@ -2183,25 +2169,20 @@ async function saveWish(rowIndex) {
     } else {
       showToast('Error: ' + data.error, 'error');
     }
-  } catch (e) { showToast('Network error', 'error'); }
+  } catch (e) { showToast('Error: ' + e.message, 'error'); }
 }
 
 async function deleteWishItem(rowIndex) {
   if (!confirm('Remove from wishlist?')) return;
   try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'deleteWishlist', rowIndex })
-    });
-    const data = await res.json();
+    const data = await apiFetch('/api/wishlist/' + rowIndex, { method: 'DELETE' });
     if (data.ok) {
       selectedWishIds.delete(rowIndex);
       showToast('Removed ✓', 'success');
       closeModal();
       loadData();
     }
-  } catch (e) { showToast('Network error', 'error'); }
+  } catch (e) { showToast('Error: ' + e.message, 'error'); }
 }
 
 // Long-press to edit wishlist item
@@ -2427,24 +2408,13 @@ async function saveEdit(rowIndex) {
   const selectedType = document.querySelector('#ed-type-row .modal-cat-btn.selected');
   const type = selectedType ? selectedType.dataset.type : null;
 
-  if (!WORKER_URL || WORKER_URL.indexOf('PASTE') === 0) {
-    showToast('Worker URL not configured', 'error');
-    return;
-  }
-
   try {
-    const updates = { Item: item, Merchant: merchant, Amount: amount, Category: category, Subcategory: subcat, Notes: notes };
-    if (type) updates.Type = type;
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'edit',
-        rowIndex: rowIndex,
-        updates: updates
-      })
+    const updates = { item, merchant, amount, category, subcategory: subcat, notes };
+    if (type) updates.type = type;
+    const data = await apiFetch('/api/transactions/' + rowIndex, {
+      method: 'PATCH',
+      body: JSON.stringify(updates)
     });
-    const data = await res.json();
     if (data.ok) {
       showToast('Saved ✓', 'success');
       closeModal();
@@ -2453,19 +2423,14 @@ async function saveEdit(rowIndex) {
       showToast('Error: ' + (data.error || 'unknown'), 'error');
     }
   } catch (e) {
-    showToast('Network error', 'error');
+    showToast('Error: ' + e.message, 'error');
   }
 }
 
 async function deleteTx(rowIndex) {
   if (!confirm('Delete this transaction?')) return;
   try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'delete', rowIndex: rowIndex })
-    });
-    const data = await res.json();
+    const data = await apiFetch('/api/transactions/' + rowIndex, { method: 'DELETE' });
     if (data.ok) {
       showToast('Deleted ✓', 'success');
       closeModal();
@@ -2474,7 +2439,7 @@ async function deleteTx(rowIndex) {
       showToast('Error: ' + data.error, 'error');
     }
   } catch (e) {
-    showToast('Network error', 'error');
+    showToast('Error: ' + e.message, 'error');
   }
 }
 
@@ -2573,15 +2538,10 @@ async function saveAdd() {
   }
 
   try {
-    const res = await fetch(WORKER_URL, {
+    const data = await apiFetch('/api/transactions', {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'add',
-        transaction: { date, item, merchant, amount, type, category, subcategory: subcat, account }
-      })
+      body: JSON.stringify({ date, item, merchant, amount, type, category, subcategory: subcat, account })
     });
-    const data = await res.json();
     if (data.ok) {
       showToast('Added ✓', 'success');
       closeModal();
@@ -2590,7 +2550,7 @@ async function saveAdd() {
       showToast('Error: ' + data.error, 'error');
     }
   } catch (e) {
-    showToast('Network error', 'error');
+    showToast('Error: ' + e.message, 'error');
   }
 }
 
@@ -2646,12 +2606,10 @@ async function saveBalance() {
   }
 
   try {
-    const res = await fetch(WORKER_URL, {
+    const data = await apiFetch('/api/balances', {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'updateBalance', account, balance, date, notes })
+      body: JSON.stringify({ account, balance, date, notes })
     });
-    const data = await res.json();
     if (data.ok) {
       showToast('Balance saved ✓', 'success');
       closeModal();
@@ -2660,7 +2618,7 @@ async function saveBalance() {
       showToast('Error: ' + data.error, 'error');
     }
   } catch (e) {
-    showToast('Network error', 'error');
+    showToast('Error: ' + e.message, 'error');
   }
 }
 
