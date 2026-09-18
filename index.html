@@ -1037,6 +1037,20 @@ function mapWishlist(items) {
   }));
 }
 
+// Live account balances (checking/savings/credit) come straight from
+// SimpleFIN via the accounts table — every sync, not just investment
+// accounts. Investment-type accounts are excluded here since those are
+// already covered, with daily history, via mapPortfolio.
+function mapLiveAccounts(accounts) {
+  return (accounts || [])
+    .filter(a => a.type !== 'investment')
+    .map(a => ({
+      account: [a.org, a.name].filter(Boolean).join(' '),
+      balance: Number(a.balance) || 0,
+      date: a.balance_date
+    }));
+}
+
 // Filter state — persists across renders
 let searchQuery = '';
 
@@ -1052,6 +1066,7 @@ let timeRange = 'month';         // 'week' | 'month' | 'year'
 let activeView = 'spending';     // 'spending' | 'investments' | 'networth'
 let portfolioSnapshots = [];
 let manualBalances = [];
+let liveAccounts = [];
 let wishlistItems = [];
 let selectedWishIds = new Set();
 
@@ -1101,6 +1116,7 @@ async function loadData() {
     portfolioSnapshots = cached.portfolioSnapshots || [];
     manualBalances = cached.manualBalances || [];
     wishlistItems = cached.wishlistItems || [];
+    liveAccounts = cached.liveAccounts || [];
     renderCurrentView(cached.transactions || []);
   }
 
@@ -1109,19 +1125,21 @@ async function loadData() {
   btn.textContent = '↻ ...';
 
   try {
-    const [txData, portData, balData, wishData] = await Promise.all([
+    const [txData, portData, balData, wishData, acctData] = await Promise.all([
       apiFetch('/api/transactions'),
       apiFetch('/api/portfolio'),
       apiFetch('/api/balances'),
-      apiFetch('/api/wishlist')
+      apiFetch('/api/wishlist'),
+      apiFetch('/api/accounts')
     ]);
 
     const transactions = mapTransactions(txData.transactions);
     portfolioSnapshots = mapPortfolio(portData.snapshots);
     manualBalances = balData.balances || [];
     wishlistItems = mapWishlist(wishData.items);
+    liveAccounts = mapLiveAccounts(acctData.accounts);
 
-    setCache({ transactions, portfolioSnapshots, manualBalances, wishlistItems });
+    setCache({ transactions, portfolioSnapshots, manualBalances, wishlistItems, liveAccounts });
 
     renderCurrentView(transactions);
     dot.className = 'status-dot';
@@ -2222,7 +2240,9 @@ function renderNetWorth() {
     }
   });
 
-  // Add Fidelity from portfolio
+  // Add auto-synced investment accounts from the portfolio snapshots —
+  // s.account already includes the institution name (e.g. "Fidelity Roth IRA"),
+  // so no need to hardcode a single institution's name here.
   const portByAccount = {};
   portfolioSnapshots.forEach(s => {
     const date = new Date(s.date);
@@ -2231,10 +2251,21 @@ function renderNetWorth() {
     }
   });
   Object.values(portByAccount).forEach(s => {
-    byAccount['Fidelity (' + s.account + ')'] = {
-      account: 'Fidelity (' + s.account + ')',
+    byAccount[s.account] = {
+      account: s.account,
       balance: s.totalvalue,
       date: s.date,
+      isPortfolio: true
+    };
+  });
+
+  // Add live checking/savings/credit balances SimpleFIN syncs automatically —
+  // no manual entry needed for anything it already reports on.
+  liveAccounts.forEach(a => {
+    byAccount[a.account] = {
+      account: a.account,
+      balance: a.balance,
+      date: a.date,
       isPortfolio: true
     };
   });
